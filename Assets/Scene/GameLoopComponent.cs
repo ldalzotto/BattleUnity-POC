@@ -2,7 +2,10 @@
 
 public class GameLoopComponent : MonoBehaviour
 {
+    public ATB_UIComponent ATB_Line_Prefab;
+
     BattleQueueConsumer BattleQueueConsumer;
+    ATB_UI AtbUI;
 
     private void Start()
     {
@@ -15,6 +18,8 @@ public class GameLoopComponent : MonoBehaviour
             l_battleEntityComponents[i].Initialize();
         }
 
+        this.AtbUI = new ATB_UI();
+        this.AtbUI.Initialize(this.ATB_Line_Prefab, Battle_Singletons._battle);
     }
 
     private void Update()
@@ -22,6 +27,7 @@ public class GameLoopComponent : MonoBehaviour
         float l_delta = Time.deltaTime;
         this.BattleQueueConsumer.Update(l_delta);
         Battle_Singletons._battle.update(l_delta);
+        this.AtbUI.Update(l_delta);
     }
 
 }
@@ -45,7 +51,13 @@ public class BattleQueueConsumer
                 else
                 {
                     Battle_Singletons._battle.unlock_ATB();
+                    Battle_Singletons._battle.entity_finishedAction(this.CurrentExecutingEvent.ActiveEntityHandle);
                 }
+            }
+
+            if(this.CurrentExecutingEvent == null)
+            {
+                Battle_Singletons._battle.unlock_ATB();
             }
         }
 
@@ -53,8 +65,8 @@ public class BattleQueueConsumer
         {
             if (BattleQueueEvent_process(this.CurrentExecutingEvent) == Process_ReturnCode.EVENT_FINISHED)
             {
+                Battle_Singletons._battle.entity_finishedAction(this.CurrentExecutingEvent.ActiveEntityHandle);
                 this.CurrentExecutingEvent = null;
-                Battle_Singletons._battle.unlock_ATB();
             };
         }
     }

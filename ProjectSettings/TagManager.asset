@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - ATB_Bars_Background
   layers:
   - Default
   - TransparentFX

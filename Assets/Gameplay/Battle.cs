@@ -53,23 +53,28 @@ public class Battle
                 if (l_entity.ATB_Value >= 1.0f)
                 {
                     Debug.Log(i);
-
+                    // BattleEventPicker(l_entity);
 
                     //TODO, this is temporary for test
                     //TODO we may have a smarter choice by adding a type to the battle entity (PLAYER_CONTROLLED ?, FOE ?) and then picking the correct target
                     { 
                         BQE_Attack l_attackEvent = new BQE_Attack { Source = new BattleEntity_Handle { Handle = i }, Target = new BattleEntity_Handle { Handle = 0 } };
-                        Battle_Singletons._battleQueue.push_event(l_attackEvent, BattleQueueEvent_Type.ATTACK);
+                        Battle_Singletons._battleQueue.push_event(new BattleEntity_Handle { Handle = i }, l_attackEvent, BattleQueueEvent_Type.ATTACK);
                     }
 
-
-                    l_entity.ATB_Value = 0.0f;
                 }
 
                 this.BattleEntities[i] = l_entity;
             }
         }
     }
+
+    /*
+    private void BattleEventPicker(BattleEntity p_actingEntity)
+    {
+
+    }
+    */
 
     public void lock_ATB()
     {
@@ -78,6 +83,11 @@ public class Battle
     public void unlock_ATB()
     {
         this.ATB_Locked = false;
+    }
+
+    public void entity_finishedAction(BattleEntity_Handle p_actingEntity)
+    {
+        this.BattleEntities.ValueRef(p_actingEntity.Handle).ATB_Value = 0.0f;
     }
 }
 
@@ -96,6 +106,7 @@ public class BQE_Attack
 public class BattleQueueEvent
 {
     public BattleQueueEvent_Type Type;
+    public BattleEntity_Handle ActiveEntityHandle;
     public object Event;
 }
 
@@ -116,9 +127,10 @@ public class BattleQueue
         return true;
     }
 
-    public void push_event(object p_event, BattleQueueEvent_Type l_type)
+    public void push_event(BattleEntity_Handle p_activeEntityHandle, object p_event, BattleQueueEvent_Type l_type)
     {
         BattleQueueEvent l_event = new BattleQueueEvent();
+        l_event.ActiveEntityHandle = p_activeEntityHandle;
         l_event.Type = l_type;
         l_event.Event = p_event;
         PendingEvents.Enqueue(l_event);
