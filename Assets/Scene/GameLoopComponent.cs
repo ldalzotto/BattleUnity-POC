@@ -75,8 +75,7 @@ public static class BattleQueueConsumer
                     {
                         l_context.Source.AnimationComponent.AnimBattle.DamageStepCount -= 1;
 
-                        //TODO -> push damage event instead
-                        Battle_Singletons._battle.apply_damage_raw(1, l_event.Target.Handle);
+                        Battle_Singletons._battleResolutionStep.push_damage_event(l_event.Target, 1);
                     }
 
                     // End event if necessary
