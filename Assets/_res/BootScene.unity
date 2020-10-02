@@ -381,6 +381,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f6cc1349b41a834db80a35728842f59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Team: 0
   ATB_Speed: 0.5
   AnimationComponent: {fileID: 0}
 --- !u!1 &463726999
@@ -751,6 +752,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f6cc1349b41a834db80a35728842f59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Team: 1
   ATB_Speed: 0.5
   AnimationComponent: {fileID: 0}
 --- !u!1 &1148525465
@@ -880,6 +882,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f6cc1349b41a834db80a35728842f59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Team: 1
   ATB_Speed: 0.5
   AnimationComponent: {fileID: 0}
 --- !u!1 &1394247490

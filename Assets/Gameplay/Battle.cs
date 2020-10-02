@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
+using Random = UnityEngine.Random;
+using Unity.Collections.LowLevel.Unsafe;
 
 public class Battle_Singletons
 {
@@ -17,8 +20,15 @@ public class Battle_Singletons
     }
 }
 
+public enum BattleEntity_Team
+{
+    PLAYER = 0,
+    FOE = 1
+}
+
 public struct BattleEntity
 {
+    public BattleEntity_Team Team;
     public float ATB_Value;
     public float ATB_Speed;
 }
@@ -52,16 +62,7 @@ public class Battle
 
                 if (l_entity.ATB_Value >= 1.0f)
                 {
-                    Debug.Log(i);
-                    // BattleEventPicker(l_entity);
-
-                    //TODO, this is temporary for test
-                    //TODO we may have a smarter choice by adding a type to the battle entity (PLAYER_CONTROLLED ?, FOE ?) and then picking the correct target
-                    { 
-                        BQE_Attack l_attackEvent = new BQE_Attack { Source = new BattleEntity_Handle { Handle = i }, Target = new BattleEntity_Handle { Handle = 0 } };
-                        Battle_Singletons._battleQueue.push_event(new BattleEntity_Handle { Handle = i }, l_attackEvent, BattleQueueEvent_Type.ATTACK);
-                    }
-
+                    BattleEventPicker(i);
                 }
 
                 this.BattleEntities[i] = l_entity;
@@ -69,12 +70,48 @@ public class Battle
         }
     }
 
-    /*
-    private void BattleEventPicker(BattleEntity p_actingEntity)
+    /// <summary>
+    /// Pick the right BattleQueueEvent and push it to the queue.
+    /// </summary>
+    /// <param name="p_actingEntityHandle"></param>
+    private void BattleEventPicker(int p_actingEntityHandle)
     {
+        using (UnsafeList<int> l_targettableEntities = new UnsafeList<int>(0, Unity.Collections.Allocator.Temp))
+        {
+            switch (this.BattleEntities.ValueRef(p_actingEntityHandle).Team)
+            {
+                case BattleEntity_Team.PLAYER:
+                    {
+                        for (int i = 0; i < this.BattleEntities.Count; i++)
+                        {
+                            if (this.BattleEntities[i].Team != BattleEntity_Team.PLAYER)
+                            {
+                                l_targettableEntities.Add(i);
+                            }
+                        }
+                    }
+                    break;
+                case BattleEntity_Team.FOE:
+                    {
+                        for (int i = 0; i < this.BattleEntities.Count; i++)
+                        {
+                            if (this.BattleEntities[i].Team != BattleEntity_Team.FOE)
+                            {
+                                l_targettableEntities.Add(i);
+                            }
+                        }
+                    }
+                    break;
+            }
 
+            if (l_targettableEntities.Length > 0)
+            {
+                int l_targettedEntity = Random.Range(0, l_targettableEntities.Length);
+                BQE_Attack l_attackEvent = new BQE_Attack { Source = new BattleEntity_Handle { Handle = p_actingEntityHandle }, Target = new BattleEntity_Handle { Handle = l_targettedEntity } };
+                Battle_Singletons._battleQueue.push_event(new BattleEntity_Handle { Handle = p_actingEntityHandle }, l_attackEvent, BattleQueueEvent_Type.ATTACK);
+            }
+        }
     }
-    */
 
     public void lock_ATB()
     {
