@@ -38,6 +38,8 @@ public class GameLoopComponent : MonoBehaviour
     private void Update()
     {
         float l_delta = Time.deltaTime;
+
+
         Battle_Singletons._battle.update(l_delta);
         Battle_Singletons._battleResolutionStep.perform_step();
         this.AtbUI.Update(l_delta);
@@ -54,6 +56,16 @@ public class GameLoopComponent : MonoBehaviour
             }
             Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Clear();
         }
+
+        if (Battle_Singletons._battleResolutionStep.Out_Death_Events.Count > 0)
+        {
+            for (int i = 0; i < Battle_Singletons._battleResolutionStep.Out_Death_Events.Count; i++)
+            {
+                BattleEntity l_deadEntity = Battle_Singletons._battleResolutionStep.Out_Death_Events[i];
+                BattleEntityComponent_Container.ComponentsByHandle[l_deadEntity].Dispose();
+            }
+            Battle_Singletons._battleResolutionStep.Out_Death_Events.Clear();
+        }
     }
 
 }
@@ -67,9 +79,9 @@ public static class BattleQueueConsumer
             case BattleQueueEvent_Type.ATTACK:
                 {
                     BQE_Attack_UserDefined l_event = (BQE_Attack_UserDefined)p_event.Event;
-                    BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source];
-                    if (l_battleEntity != null)
+                    if (!l_event.Source.IsDead && !l_event.Target.IsDead)
                     {
+                        BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source];
                         if (l_battleEntity.AnimationComponent != null)
                         {
                             l_event.UserObject_Context = new BQE_Attack_SceneContext() { Source = l_battleEntity, Target = BattleEntityComponent_Container.ComponentsByHandle[l_event.Target] };
@@ -116,6 +128,7 @@ public static class BattleQueueConsumer
 
         return Process_ReturnCode.NO_EVENT_INPROGRESS;
     }
+
 }
 
 public class BQE_Attack_SceneContext

@@ -11,6 +11,7 @@ public class BattleEntityComponent : MonoBehaviour
 {
     public BattleEntity_Team Team;
     public float ATB_Speed;
+    public int InitialHealth;
 
     BattleEntity BattleEntityHandle;
     
@@ -26,7 +27,15 @@ public class BattleEntityComponent : MonoBehaviour
         this.BattleEntityHandle = BattleEntity.Alloc();
         this.BattleEntityHandle.Team = this.Team;
         this.BattleEntityHandle.ATB_Speed = this.ATB_Speed;
+        this.BattleEntityHandle.Life = this.InitialHealth;
+
         Battle_Singletons._battle.push_battleEntity(this.BattleEntityHandle);
         BattleEntityComponent_Container.ComponentsByHandle.Add(this.BattleEntityHandle, this);
+    }
+
+    public void Dispose()
+    {
+        BattleEntityComponent_Container.ComponentsByHandle.Remove(this.BattleEntityHandle);
+        GameObject.Destroy(this.gameObject);
     }
 }

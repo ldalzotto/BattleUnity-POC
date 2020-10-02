@@ -16,6 +16,7 @@ public class Battle_Singletons
     {
         _battle = new Battle();
         _battle.BattleEntities = new List<BattleEntity>();
+        _battle.DeadBattleEntities = new List<BattleEntity>();
 
         _battleResolutionStep = BattleResolutionStep.Alloc();
     }
@@ -42,6 +43,8 @@ public class BattleEntity
 public class Battle
 {
     public List<BattleEntity> BattleEntities;
+    public List<BattleEntity> DeadBattleEntities;
+    
     private bool ATB_Locked = false;
 
     public void push_battleEntity(BattleEntity p_battleEntity)
@@ -58,11 +61,15 @@ public class Battle
             for (int i = 0; i < this.BattleEntities.Count; i++)
             {
                 BattleEntity l_entity = this.BattleEntities[i];
-                l_entity.ATB_Value = Math.Min(l_entity.ATB_Value + (l_entity.ATB_Speed * d), 1.0f);
 
-                if (l_entity.ATB_Value >= 1.0f)
+                if (!l_entity.IsDead)
                 {
-                    Battle_Algorithm.BattleEventPicker(this, l_entity);
+                    l_entity.ATB_Value = Math.Min(l_entity.ATB_Value + (l_entity.ATB_Speed * d), 1.0f);
+
+                    if (l_entity.ATB_Value >= 1.0f)
+                    {
+                        Battle_Algorithm.BattleEventPicker(this, l_entity);
+                    }
                 }
 
                 this.BattleEntities[i] = l_entity;
@@ -136,6 +143,7 @@ public static class Battle_Algorithm
                 Battle_Singletons._battleResolutionStep.push_attack_event(p_actingEntity, l_attackEvent, BattleQueueEvent_Type.ATTACK);
             }
         }
+
     }
 
 }
@@ -171,7 +179,7 @@ public class BQEOut_Damage_Applied
     public int FinalDamageApplied;
     public static BQEOut_Damage_Applied Alloc(BattleEntity p_target, int p_finalDamageApplied)
     {
-        return new BQEOut_Damage_Applied { Target = p_target, FinalDamageApplied = p_finalDamageApplied }; 
+        return new BQEOut_Damage_Applied { Target = p_target, FinalDamageApplied = p_finalDamageApplied };
     }
 }
 
@@ -204,6 +212,7 @@ public class BattleResolutionStep
     // public Queue<BattleQueueEvent> DeathEvents;
 
     public List<BQEOut_Damage_Applied> Out_DamageApplied_Events;
+    public List<BattleEntity> Out_Death_Events;
 
     public Func<BattleQueueEvent, Initialize_ReturnCode> BattleQueueEventInitialize_UserFunction;
     public Func<BattleQueueEvent, Process_ReturnCode> BattleQueueEventProcess_UserFunction;
@@ -214,9 +223,9 @@ public class BattleResolutionStep
     {
         BattleResolutionStep l_resolution = new BattleResolutionStep();
         l_resolution.AttackEvents = new Queue<BattleQueueEvent>();
-        // l_resolution.DeathEvents = new Queue<BattleQueueEvent>();
         l_resolution.DamageEvents = new List<BQE_Damage_Apply>();
         l_resolution.Out_DamageApplied_Events = new List<BQEOut_Damage_Applied>();
+        l_resolution.Out_Death_Events = new List<BattleEntity>();
         return l_resolution;
     }
 
@@ -271,14 +280,15 @@ public class BattleResolutionStep
                 if (Battle_Singletons._battle.apply_damage_raw(l_damageEvent.DamageApplied, l_damageEvent.Target))
                 {
                     l_damageEvent.Target.IsDead = true;
+                    push_death_event(l_damageEvent.Target);
+                    Battle_Singletons._battle.BattleEntities.Remove(l_damageEvent.Target);
+                    Battle_Singletons._battle.DeadBattleEntities.Add(l_damageEvent.Target);
                 }
 
                 this.Out_DamageApplied_Events.Add(BQEOut_Damage_Applied.Alloc(l_damageEvent.Target, l_damageEvent.DamageApplied));
             }
             this.DamageEvents.Clear();
         }
-
-
 
     }
 
@@ -292,16 +302,12 @@ public class BattleResolutionStep
         this.AttackEvents.Enqueue(l_event);
     }
 
-    /*
-    public void push_death_event(BattleEntity_Handle p_activeEntityHandle, object p_event, BattleQueueEvent_Type l_type)
+
+    private void push_death_event(BattleEntity p_activeEntityHandle)
     {
-        BattleQueueEvent l_event = BattleQueueEvent.Alloc();
-        l_event.ActiveEntityHandle = p_activeEntityHandle;
-        l_event.Type = l_type;
-        l_event.Event = p_event;
-        this.DeathEvents.Enqueue(l_event);
+        this.Out_Death_Events.Add(p_activeEntityHandle);
     }
-    */
+
     public void push_damage_event(BattleEntity p_targettedEntity, int p_damageValue)
     {
         BQE_Damage_Apply l_damageEvent = BQE_Damage_Apply.Alloc();
