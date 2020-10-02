@@ -37,7 +37,7 @@ public struct Anim_BattleAttack_Default
                 {
                     float l_distance = Vector3.Distance(this.AnimatedTransform.position, this.TargetTransform.position);
 
-                    if (l_distance > this.LastFrameDistace)
+                    if ((l_distance > this.LastFrameDistace) || (l_distance == 0.0f))
                     {
                         // We terminate the movement
                         this.AnimatedTransform.position = this.TargetTransform.position;
@@ -59,7 +59,7 @@ public struct Anim_BattleAttack_Default
 
                     float l_distance = Vector3.Distance(this.AnimatedTransform.position, this.InitalAnimatedTransform_Position);
 
-                    if (l_distance > this.LastFrameDistace)
+                    if ((l_distance > this.LastFrameDistace) || (l_distance == 0.0f))
                     {
                         // We terminate the movement
                         this.AnimatedTransform.position = this.InitalAnimatedTransform_Position;

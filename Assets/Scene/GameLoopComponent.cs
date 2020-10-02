@@ -1,5 +1,4 @@
-﻿
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GameLoopComponent : MonoBehaviour
 {
@@ -7,15 +6,22 @@ public class GameLoopComponent : MonoBehaviour
 
     private void Start()
     {
+        Battle_Singletons.Alloc();
         this.BattleQueueConsumer = new BattleQueueConsumer();
+
+        BattleEntityComponent[] l_battleEntityComponents = GameObject.FindObjectsOfType<BattleEntityComponent>();
+        for(int i=0;i<l_battleEntityComponents.Length;i++)
+        {
+            l_battleEntityComponents[i].Initialize();
+        }
+
     }
 
     private void Update()
     {
         float l_delta = Time.deltaTime;
         this.BattleQueueConsumer.Update(l_delta);
-        Battle.get_singleton().update(l_delta);
-        // this.consume_battleQueue(BattleQueue.get_singleton());
+        Battle_Singletons._battle.update(l_delta);
     }
 
 }
@@ -23,80 +29,95 @@ public class GameLoopComponent : MonoBehaviour
 public class BattleQueueConsumer
 {
     BattleQueueEvent CurrentExecutingEvent = null;
+    object CurrentExecutingEvent_SceneContext = null;
 
     public void Update(float d)
     {
         if (this.CurrentExecutingEvent == null)
         {
-            while (BattleQueue.get_singleton().get_next(out this.CurrentExecutingEvent))
+            while (Battle_Singletons._battleQueue.get_next(out this.CurrentExecutingEvent))
             {
-                if (BattleQueueEvent_Initialize(this.CurrentExecutingEvent))
+                if (BattleQueueEvent_Initialize(this.CurrentExecutingEvent) == Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED)
                 {
-                    //TODO - Caching the Battle singleton
-                    //TODO - State of Battle must be handled by him
-                    Battle.get_singleton().ATB_Locked = true;
+                    Battle_Singletons._battle.lock_ATB();
                     break;
                 }
                 else
                 {
-                    //TODO - Caching the Battle singleton
-                    //TODO - State of Battle must be handled by him
-                    Battle.get_singleton().ATB_Locked = false;
+                    Battle_Singletons._battle.unlock_ATB();
                 }
             }
         }
 
         if (this.CurrentExecutingEvent != null)
         {
-            if (BattleQueueEvent_process(this.CurrentExecutingEvent))
+            if (BattleQueueEvent_process(this.CurrentExecutingEvent) == Process_ReturnCode.EVENT_FINISHED)
             {
                 this.CurrentExecutingEvent = null;
-                //TODO - Caching the Battle singleton
-                //TODO - State of Battle must be handled by him
-                Battle.get_singleton().ATB_Locked = false;
+                Battle_Singletons._battle.unlock_ATB();
             };
         }
     }
 
-    //TODO - Cleaner interface ? what does the bool mean ?
-    private static bool BattleQueueEvent_Initialize(BattleQueueEvent p_event)
+    enum Initialize_ReturnCode
+    {
+        NOTHING = 0,
+        NEEDS_TO_BE_PROCESSED = 1
+    }
+
+    private Initialize_ReturnCode BattleQueueEvent_Initialize(BattleQueueEvent p_event)
     {
         switch (p_event.Type)
         {
             case BattleQueueEvent_Type.ATTACK:
                 {
                     BQE_Attack l_event = (BQE_Attack)p_event.Event;
-                    //TODO - Having a cleaner way to handle how the event is processed
                     BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source.Handle];
                     if (l_battleEntity != null)
                     {
-                        AnimationComponent l_anim = l_battleEntity.GetComponent<AnimationComponent>();
-                        if (l_anim != null)
+                        if (l_battleEntity.AnimationComponent != null)
                         {
-                            l_anim.InitializeAnimation(BattleEntityComponent_Container.ComponentsByHandle[l_event.Target.Handle].transform);
-                            return true;
+                            this.CurrentExecutingEvent_SceneContext = new BQE_Attack_SceneContext() { Source = l_battleEntity, Target = BattleEntityComponent_Container.ComponentsByHandle[l_event.Target.Handle] };
+                            l_battleEntity.AnimationComponent.InitializeAnimation(((BQE_Attack_SceneContext)this.CurrentExecutingEvent_SceneContext).Target.transform);
+                            return Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED;
                         }
                     }
                 }
                 break;
         }
-        return false;
+        return Initialize_ReturnCode.NOTHING;
     }
 
+    enum Process_ReturnCode
+    {
+        EVENT_FINISHED = 0,
+        EVENT_INPROGRESS = 1,
+        NO_EVENT_INPROGRESS = 2
+    }
 
-    //TODO - Cleaner interface ? what does the bool mean ?
-    private static bool BattleQueueEvent_process(BattleQueueEvent p_event)
+    private Process_ReturnCode BattleQueueEvent_process(BattleQueueEvent p_event)
     {
         switch (p_event.Type)
         {
             case BattleQueueEvent_Type.ATTACK:
                 {
-                    //TODO - Having a cleaner way to handle how the event is processed
-                    BQE_Attack l_event = (BQE_Attack)p_event.Event;
-                    return BattleEntityComponent_Container.ComponentsByHandle[l_event.Source.Handle].GetComponent<AnimationComponent>().AnimBattle.State == Anim_BattleAttack_Default_State.End;
+                    if(((BQE_Attack_SceneContext)this.CurrentExecutingEvent_SceneContext).Source.AnimationComponent.AnimBattle.State == Anim_BattleAttack_Default_State.End)
+                    {
+                        return Process_ReturnCode.EVENT_FINISHED;
+                    }
+                    else
+                    {
+                        return Process_ReturnCode.EVENT_INPROGRESS;
+                    }
                 }
         }
 
-        return true;
+        return Process_ReturnCode.NO_EVENT_INPROGRESS;
     }
+}
+
+public class BQE_Attack_SceneContext
+{
+    public BattleEntityComponent Source;
+    public BattleEntityComponent Target;
 }

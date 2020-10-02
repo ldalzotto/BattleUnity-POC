@@ -2,6 +2,21 @@
 using System.Linq;
 using UnityEngine;
 
+public class Battle_Singletons
+{
+    public static Battle _battle;
+    public static BattleQueue _battleQueue;
+
+    public static void Alloc()
+    {
+        _battle = new Battle();
+        _battle.BattleEntities = new RefList<BattleEntity>();
+
+        _battleQueue = new BattleQueue();
+        _battleQueue.PendingEvents = new Queue<BattleQueueEvent>();
+    }
+}
+
 public struct BattleEntity
 {
     public float ATB_Value;
@@ -15,22 +30,8 @@ public struct BattleEntity_Handle
 
 public class Battle
 {
-    private static Battle _battle;
-
-    //TODO - Must be private
-    public bool ATB_Locked;
     public RefList<BattleEntity> BattleEntities;
-
-    public static Battle get_singleton()
-    {
-        if (_battle == null)
-        {
-            _battle = new Battle();
-            _battle.BattleEntities = new RefList<BattleEntity>();
-        }
-
-        return _battle;
-    }
+    private bool ATB_Locked = false;
 
     public BattleEntity_Handle push_battleEntity(ref BattleEntity p_battleEntity)
     {
@@ -55,9 +56,10 @@ public class Battle
 
 
                     //TODO, this is temporary for test
+                    //TODO we may have a smarter choice by adding a type to the battle entity (PLAYER_CONTROLLED ?, FOE ?) and then picking the correct target
                     { 
                         BQE_Attack l_attackEvent = new BQE_Attack { Source = new BattleEntity_Handle { Handle = i }, Target = new BattleEntity_Handle { Handle = 0 } };
-                        BattleQueue.get_singleton().push_event(l_attackEvent, BattleQueueEvent_Type.ATTACK);
+                        Battle_Singletons._battleQueue.push_event(l_attackEvent, BattleQueueEvent_Type.ATTACK);
                     }
 
 
@@ -67,6 +69,15 @@ public class Battle
                 this.BattleEntities[i] = l_entity;
             }
         }
+    }
+
+    public void lock_ATB()
+    {
+        this.ATB_Locked = true;
+    }
+    public void unlock_ATB()
+    {
+        this.ATB_Locked = false;
     }
 }
 
@@ -90,31 +101,17 @@ public class BattleQueueEvent
 
 public class BattleQueue
 {
-    private static BattleQueue _battleQueue;
-
-    Queue<BattleQueueEvent> PendingEvents;
-
-    public static BattleQueue get_singleton()
-    {
-        if (_battleQueue == null)
-        {
-            _battleQueue = new BattleQueue();
-            _battleQueue.PendingEvents = new Queue<BattleQueueEvent>();
-        }
-        return _battleQueue;
-    }
+    public Queue<BattleQueueEvent> PendingEvents;
 
     public bool get_next(out BattleQueueEvent out_event)
     {
         if (this.PendingEvents.Count == 0)
         {
             out_event = null;
-            // Battle.get_singleton().ATB_Locked = false;
             return false;
         }
 
         out_event = this.PendingEvents.Dequeue();
-        // Battle.get_singleton().ATB_Locked = true;
 
         return true;
     }
