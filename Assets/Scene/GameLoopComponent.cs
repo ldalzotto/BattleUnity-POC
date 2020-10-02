@@ -2,6 +2,7 @@
 
 public class GameLoopComponent : MonoBehaviour
 {
+    public AnimationConfiguration AnimationConfiguration;
     public ATB_UIComponent ATB_Line_Prefab;
 
     BattleQueueConsumer BattleQueueConsumer;
@@ -15,7 +16,7 @@ public class GameLoopComponent : MonoBehaviour
         BattleEntityComponent[] l_battleEntityComponents = GameObject.FindObjectsOfType<BattleEntityComponent>();
         for(int i=0;i<l_battleEntityComponents.Length;i++)
         {
-            l_battleEntityComponents[i].Initialize();
+            l_battleEntityComponents[i].Initialize(this.AnimationConfiguration);
         }
 
         this.AtbUI = new ATB_UI();

@@ -17,10 +17,11 @@ public class BattleEntityComponent : MonoBehaviour
     /* Internal components */
     public AnimationComponent AnimationComponent;
 
-    public void Initialize()
+    public void Initialize(AnimationConfiguration p_animationConfiguration)
     {
         this.AnimationComponent = this.gameObject.AddComponent<AnimationComponent>();
-        this.AnimationComponent.AnimBattle.AnimatedTransform_Speed = 15.0f;
+        this.AnimationComponent.AnimBattle.Conf = p_animationConfiguration.Anim_BattleAttack_Default;
+        /* .AnimatedTransform_Speed = 15.0f */
 
         BattleEntity l_entity = new BattleEntity();
         l_entity.Team = this.Team;

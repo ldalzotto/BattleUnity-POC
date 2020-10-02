@@ -106,7 +106,7 @@ public class Battle
 
             if (l_targettableEntities.Length > 0)
             {
-                int l_targettedEntity = Random.Range(0, l_targettableEntities.Length);
+                int l_targettedEntity = l_targettableEntities[Random.Range(0, l_targettableEntities.Length)];
                 BQE_Attack l_attackEvent = new BQE_Attack { Source = new BattleEntity_Handle { Handle = p_actingEntityHandle }, Target = new BattleEntity_Handle { Handle = l_targettedEntity } };
                 Battle_Singletons._battleQueue.push_event(new BattleEntity_Handle { Handle = p_actingEntityHandle }, l_attackEvent, BattleQueueEvent_Type.ATTACK);
             }

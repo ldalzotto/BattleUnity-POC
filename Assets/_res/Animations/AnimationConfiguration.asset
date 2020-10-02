@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60a1ade31bd2e69499c3254758511622, type: 3}
+  m_Name: AnimationConfiguration
+  m_EditorClassIdentifier: 
+  Anim_BattleAttack_Default: {fileID: 11400000, guid: 066ecb52538786c42af8a64d4854a7e9,
+    type: 2}
