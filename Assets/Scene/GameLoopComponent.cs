@@ -43,12 +43,12 @@ public static class BattleQueueConsumer
             case BattleQueueEvent_Type.ATTACK:
                 {
                     BQE_Attack_UserDefined l_event = (BQE_Attack_UserDefined)p_event.Event;
-                    BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source.Handle];
+                    BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source];
                     if (l_battleEntity != null)
                     {
                         if (l_battleEntity.AnimationComponent != null)
                         {
-                            l_event.UserObject_Context = new BQE_Attack_SceneContext() { Source = l_battleEntity, Target = BattleEntityComponent_Container.ComponentsByHandle[l_event.Target.Handle] };
+                            l_event.UserObject_Context = new BQE_Attack_SceneContext() { Source = l_battleEntity, Target = BattleEntityComponent_Container.ComponentsByHandle[l_event.Target] };
                             l_battleEntity.AnimationComponent.InitializeAnimation(((BQE_Attack_SceneContext)l_event.UserObject_Context).Target.transform);
                             return Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED;
                         }

@@ -15,7 +15,7 @@ public class Battle_Singletons
     public static void Alloc()
     {
         _battle = new Battle();
-        _battle.BattleEntities = new RefList<BattleEntity>();
+        _battle.BattleEntities = new List<BattleEntity>();
 
         _battleResolutionStep = BattleResolutionStep.Alloc();
     }
@@ -27,7 +27,7 @@ public enum BattleEntity_Team
     FOE = 1
 }
 
-public struct BattleEntity
+public class BattleEntity
 {
     public BattleEntity_Team Team;
     public float ATB_Value;
@@ -35,23 +35,19 @@ public struct BattleEntity
 
     public int Life;
     public bool IsDead;
-}
 
-public struct BattleEntity_Handle
-{
-    public int Handle;
+    public static BattleEntity Alloc() { return new BattleEntity(); }
 }
 
 public class Battle
 {
-    public RefList<BattleEntity> BattleEntities;
+    public List<BattleEntity> BattleEntities;
     private bool ATB_Locked = false;
 
-    public BattleEntity_Handle push_battleEntity(ref BattleEntity p_battleEntity)
+    public void push_battleEntity(BattleEntity p_battleEntity)
     {
         p_battleEntity.ATB_Value = 0.0f;
-        this.BattleEntities.AddRef(ref p_battleEntity);
-        return new BattleEntity_Handle { Handle = this.BattleEntities.Count - 1 };
+        this.BattleEntities.Add(p_battleEntity);
     }
 
     public void update(float d)
@@ -66,7 +62,7 @@ public class Battle
 
                 if (l_entity.ATB_Value >= 1.0f)
                 {
-                    Battle_Algorithm.BattleEventPicker(this, i);
+                    Battle_Algorithm.BattleEventPicker(this, l_entity);
                 }
 
                 this.BattleEntities[i] = l_entity;
@@ -83,17 +79,17 @@ public class Battle
         this.ATB_Locked = false;
     }
 
-    public void entity_finishedAction(BattleEntity_Handle p_actingEntity)
+    public void entity_finishedAction(BattleEntity p_actingEntity)
     {
-        this.BattleEntities.ValueRef(p_actingEntity.Handle).ATB_Value = 0.0f;
+        p_actingEntity.ATB_Value = 0.0f;
     }
 
 
-    public bool apply_damage_raw(int p_appliedDamage, int p_hittedEntity)
+    public bool apply_damage_raw(int p_appliedDamage, BattleEntity p_hittedEntity)
     {
-        this.BattleEntities.ValueRef(p_hittedEntity).Life -= p_appliedDamage;
-        this.BattleEntities.ValueRef(p_hittedEntity).Life = Math.Max(this.BattleEntities.ValueRef(p_hittedEntity).Life, 0);
-        return this.BattleEntities.ValueRef(p_hittedEntity).Life == 0;
+        p_hittedEntity.Life -= p_appliedDamage;
+        p_hittedEntity.Life = Math.Max(p_hittedEntity.Life, 0);
+        return p_hittedEntity.Life == 0;
     }
 }
 
@@ -102,12 +98,12 @@ public static class Battle_Algorithm
     /// <summary>
     /// Pick the right BattleQueueEvent and push it to the queue.
     /// </summary>
-    /// <param name="p_actingEntityHandle"></param>
-    public static void BattleEventPicker(Battle p_battle, int p_actingEntityHandle)
+    /// <param name="p_actingEntity"></param>
+    public static void BattleEventPicker(Battle p_battle, BattleEntity p_actingEntity)
     {
         using (UnsafeList<int> l_targettableEntities = new UnsafeList<int>(0, Unity.Collections.Allocator.Temp))
         {
-            switch (p_battle.BattleEntities.ValueRef(p_actingEntityHandle).Team)
+            switch (p_actingEntity.Team)
             {
                 case BattleEntity_Team.PLAYER:
                     {
@@ -135,9 +131,9 @@ public static class Battle_Algorithm
 
             if (l_targettableEntities.Length > 0)
             {
-                int l_targettedEntity = l_targettableEntities[Random.Range(0, l_targettableEntities.Length)];
-                BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Source = new BattleEntity_Handle { Handle = p_actingEntityHandle }, Target = new BattleEntity_Handle { Handle = l_targettedEntity } };
-                Battle_Singletons._battleResolutionStep.push_attack_event(new BattleEntity_Handle { Handle = p_actingEntityHandle }, l_attackEvent, BattleQueueEvent_Type.ATTACK);
+                BattleEntity l_targettedEntity = p_battle.BattleEntities[l_targettableEntities[Random.Range(0, l_targettableEntities.Length)]];
+                BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Source = p_actingEntity, Target = l_targettedEntity };
+                Battle_Singletons._battleResolutionStep.push_attack_event(p_actingEntity, l_attackEvent, BattleQueueEvent_Type.ATTACK);
             }
         }
     }
@@ -153,8 +149,8 @@ public enum BattleQueueEvent_Type
 
 public class BQE_Attack_UserDefined
 {
-    public BattleEntity_Handle Source;
-    public BattleEntity_Handle Target;
+    public BattleEntity Source;
+    public BattleEntity Target;
 
     public int UserObject_Context_Type;
     public object UserObject_Context;
@@ -162,7 +158,7 @@ public class BQE_Attack_UserDefined
 
 public class BQE_Damage_Apply
 {
-    public BattleEntity_Handle Target;
+    public BattleEntity Target;
     public int DamageApplied;
 
     public static BQE_Damage_Apply Alloc() { return new BQE_Damage_Apply(); }
@@ -171,7 +167,7 @@ public class BQE_Damage_Apply
 public class BattleQueueEvent
 {
     public BattleQueueEvent_Type Type;
-    public BattleEntity_Handle ActiveEntityHandle;
+    public BattleEntity ActiveEntityHandle;
     public object Event;
 
     public static BattleQueueEvent Alloc() { return new BattleQueueEvent(); }
@@ -257,9 +253,9 @@ public class BattleResolutionStep
             for (int i = 0; i < this.DamageEvents.Count; i++)
             {
                 BQE_Damage_Apply l_damageEvent = this.DamageEvents[i];
-                if (Battle_Singletons._battle.apply_damage_raw(l_damageEvent.DamageApplied, l_damageEvent.Target.Handle))
+                if (Battle_Singletons._battle.apply_damage_raw(l_damageEvent.DamageApplied, l_damageEvent.Target))
                 {
-                    Battle_Singletons._battle.BattleEntities.ValueRef(l_damageEvent.Target.Handle).IsDead = true;
+                    l_damageEvent.Target.IsDead = true;
                 }
             }
             this.DamageEvents.Clear();
@@ -270,7 +266,7 @@ public class BattleResolutionStep
     }
 
 
-    public void push_attack_event(BattleEntity_Handle p_activeEntityHandle, object p_event, BattleQueueEvent_Type l_type)
+    public void push_attack_event(BattleEntity p_activeEntityHandle, object p_event, BattleQueueEvent_Type l_type)
     {
         BattleQueueEvent l_event = BattleQueueEvent.Alloc();
         l_event.ActiveEntityHandle = p_activeEntityHandle;
@@ -289,7 +285,7 @@ public class BattleResolutionStep
         this.DeathEvents.Enqueue(l_event);
     }
     */
-    public void push_damage_event(BattleEntity_Handle p_targettedEntity, int p_damageValue)
+    public void push_damage_event(BattleEntity p_targettedEntity, int p_damageValue)
     {
         BQE_Damage_Apply l_damageEvent = BQE_Damage_Apply.Alloc();
         l_damageEvent.DamageApplied = p_damageValue;

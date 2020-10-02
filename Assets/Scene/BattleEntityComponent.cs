@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class BattleEntityComponent_Container
 {
-    public static Dictionary<int, BattleEntityComponent> ComponentsByHandle = new Dictionary<int, BattleEntityComponent>();
+    public static Dictionary<BattleEntity, BattleEntityComponent> ComponentsByHandle = new Dictionary<BattleEntity, BattleEntityComponent>();
 }
 
 public class BattleEntityComponent : MonoBehaviour
@@ -12,7 +12,7 @@ public class BattleEntityComponent : MonoBehaviour
     public BattleEntity_Team Team;
     public float ATB_Speed;
 
-    BattleEntity_Handle BattleEntityHandle;
+    BattleEntity BattleEntityHandle;
     
     /* Internal components */
     public AnimationComponent AnimationComponent;
@@ -23,10 +23,10 @@ public class BattleEntityComponent : MonoBehaviour
         this.AnimationComponent.AnimBattle.Conf = p_animationConfiguration.Anim_BattleAttack_Default;
         /* .AnimatedTransform_Speed = 15.0f */
 
-        BattleEntity l_entity = new BattleEntity();
-        l_entity.Team = this.Team;
-        l_entity.ATB_Speed = this.ATB_Speed;
-        this.BattleEntityHandle = Battle_Singletons._battle.push_battleEntity(ref l_entity);
-        BattleEntityComponent_Container.ComponentsByHandle.Add(this.BattleEntityHandle.Handle, this);
+        this.BattleEntityHandle = BattleEntity.Alloc();
+        this.BattleEntityHandle.Team = this.Team;
+        this.BattleEntityHandle.ATB_Speed = this.ATB_Speed;
+        Battle_Singletons._battle.push_battleEntity(this.BattleEntityHandle);
+        BattleEntityComponent_Container.ComponentsByHandle.Add(this.BattleEntityHandle, this);
     }
 }

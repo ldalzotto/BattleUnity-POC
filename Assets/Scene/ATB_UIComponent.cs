@@ -3,11 +3,11 @@ using UnityEngine.UI;
 
 public class ATB_UIComponent : MonoBehaviour
 {
-    public BattleEntity_Handle AssociatedEntityHandle;
+    public BattleEntity AssociatedEntity;
     public Text Text;
-    public void Initialize(BattleEntity_Handle p_associatedEntityHandle)
+    public void Initialize(BattleEntity p_associatedEntity)
     {
-        this.AssociatedEntityHandle = p_associatedEntityHandle;
+        this.AssociatedEntity = p_associatedEntity;
         this.Text = GetComponent<Text>();
     }
 }

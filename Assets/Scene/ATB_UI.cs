@@ -22,7 +22,7 @@ public class ATB_UI
             ATB_UIComponent l_atb_line = GameObject.Instantiate(this.ATB_Line_Prefab, this.ATB_Bars_Background_GO.transform);
             RectTransform l_transform = (RectTransform)l_atb_line.transform;
             l_transform.anchoredPosition = new Vector2(l_transform.anchoredPosition.x, -5 - (i * l_transform.sizeDelta.y)) ;
-            l_atb_line.Initialize(new BattleEntity_Handle { Handle = i });
+            l_atb_line.Initialize(p_battle.BattleEntities[i]);
             this.ATB_Lines.Add(l_atb_line);
         }
     }
@@ -31,7 +31,7 @@ public class ATB_UI
     {
         for (int i = 0; i < this.ATB_Lines.Count; i++)
         {
-            this.ATB_Lines[i].Text.text = string.Format("{0} / 1.000", this._battle.BattleEntities[this.ATB_Lines[i].AssociatedEntityHandle.Handle].ATB_Value);
+            this.ATB_Lines[i].Text.text = string.Format("{0} / 1.000", this.ATB_Lines[i].AssociatedEntity.ATB_Value);
         }
     }
 }
