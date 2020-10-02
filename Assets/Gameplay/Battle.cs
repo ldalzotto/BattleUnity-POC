@@ -9,15 +9,14 @@ using System;
 public class Battle_Singletons
 {
     public static Battle _battle;
-    public static BattleQueue _battleQueue;
+    public static BattleResolutionStep _battleResolutionStep;
 
     public static void Alloc()
     {
         _battle = new Battle();
         _battle.BattleEntities = new RefList<BattleEntity>();
 
-        _battleQueue = new BattleQueue();
-        _battleQueue.PendingEvents = new Queue<BattleQueueEvent>();
+        _battleResolutionStep = BattleResolutionStep.Alloc();
     }
 }
 
@@ -92,7 +91,7 @@ public class Battle
     {
         this.BattleEntities.ValueRef(p_hittedEntity).Life -= p_appliedDamage;
         this.BattleEntities.ValueRef(p_hittedEntity).Life = Math.Max(this.BattleEntities.ValueRef(p_hittedEntity).Life, 0);
-        if(this.BattleEntities.ValueRef(p_hittedEntity).Life == 0)
+        if (this.BattleEntities.ValueRef(p_hittedEntity).Life == 0)
         {
             //TODO -> Push death event 
         }
@@ -138,8 +137,8 @@ public static class Battle_Algorithm
             if (l_targettableEntities.Length > 0)
             {
                 int l_targettedEntity = l_targettableEntities[Random.Range(0, l_targettableEntities.Length)];
-                BQE_Attack l_attackEvent = new BQE_Attack { Source = new BattleEntity_Handle { Handle = p_actingEntityHandle }, Target = new BattleEntity_Handle { Handle = l_targettedEntity } };
-                Battle_Singletons._battleQueue.push_event(new BattleEntity_Handle { Handle = p_actingEntityHandle }, l_attackEvent, BattleQueueEvent_Type.ATTACK);
+                BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Source = new BattleEntity_Handle { Handle = p_actingEntityHandle }, Target = new BattleEntity_Handle { Handle = l_targettedEntity } };
+                Battle_Singletons._battleResolutionStep.push_attack_event(new BattleEntity_Handle { Handle = p_actingEntityHandle }, l_attackEvent, BattleQueueEvent_Type.ATTACK);
             }
         }
     }
@@ -149,7 +148,8 @@ public static class Battle_Algorithm
 public enum BattleQueueEvent_Type
 {
     NOTHING = 0,
-    ATTACK = 1
+    ATTACK = 1,
+    ATTACK_USERDEFINED = 2
 }
 
 public class BQE_Attack
@@ -164,6 +164,16 @@ public class BQE_Attack
     }
 }
 
+public class BQE_Attack_UserDefined
+{
+    public BattleEntity_Handle Source;
+    public BattleEntity_Handle Target;
+    public int DamageApplied;
+
+    public int UserObject_Context_Type;
+    public object UserObject_Context;
+}
+
 public class BattleQueueEvent
 {
     public BattleQueueEvent_Type Type;
@@ -171,29 +181,99 @@ public class BattleQueueEvent
     public object Event;
 }
 
-public class BattleQueue
+
+public enum Initialize_ReturnCode
 {
-    public Queue<BattleQueueEvent> PendingEvents;
+    NOTHING = 0,
+    NEEDS_TO_BE_PROCESSED = 1
+}
+public enum Process_ReturnCode
+{
+    EVENT_FINISHED = 0,
+    EVENT_INPROGRESS = 1,
+    NO_EVENT_INPROGRESS = 2
+}
 
-    public bool get_next(out BattleQueueEvent out_event)
+public class BattleResolutionStep
+{
+    public Queue<BattleQueueEvent> AttackEvents;
+    public Queue<BattleQueueEvent> DeathEvents;
+
+    public Func<BattleQueueEvent, Initialize_ReturnCode> BattleQueueEventInitialize_UserFunction;
+    public Func<BattleQueueEvent, Process_ReturnCode> BattleQueueEventProcess_UserFunction;
+
+    public BattleQueueEvent CurrentExecutingEvent = null;
+
+    public static BattleResolutionStep Alloc()
     {
-        if (this.PendingEvents.Count == 0)
-        {
-            out_event = null;
-            return false;
-        }
-
-        out_event = this.PendingEvents.Dequeue();
-
-        return true;
+        BattleResolutionStep l_resolution = new BattleResolutionStep();
+        l_resolution.AttackEvents = new Queue<BattleQueueEvent>();
+        l_resolution.DeathEvents = new Queue<BattleQueueEvent>();
+        return l_resolution;
     }
 
-    public void push_event(BattleEntity_Handle p_activeEntityHandle, object p_event, BattleQueueEvent_Type l_type)
+    public void perform_step()
+    {
+    step:
+
+        if (this.CurrentExecutingEvent == null)
+        {
+            if (this.AttackEvents.Count > 0)
+            {
+                this.CurrentExecutingEvent = this.AttackEvents.Dequeue();
+                switch (this.BattleQueueEventInitialize_UserFunction.Invoke(this.CurrentExecutingEvent))
+                {
+                    case Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED:
+                        goto attackevents_init_end;
+                    case Initialize_ReturnCode.NOTHING:
+                        this.CurrentExecutingEvent = null;
+                        goto step;
+                }
+            }
+        }
+
+        attackevents_init_end:;
+
+
+        if (this.CurrentExecutingEvent != null)
+        {
+            Battle_Singletons._battle.lock_ATB();
+
+            switch (this.BattleQueueEventProcess_UserFunction.Invoke(this.CurrentExecutingEvent))
+            {
+                case Process_ReturnCode.EVENT_FINISHED:
+                    {
+                        Battle_Singletons._battle.entity_finishedAction(this.CurrentExecutingEvent.ActiveEntityHandle);
+                        this.CurrentExecutingEvent = null;
+                        goto step;
+                    }
+            }
+        }
+        else
+        {
+            Battle_Singletons._battle.unlock_ATB();
+        }
+
+
+    }
+
+
+    public void push_attack_event(BattleEntity_Handle p_activeEntityHandle, object p_event, BattleQueueEvent_Type l_type)
     {
         BattleQueueEvent l_event = new BattleQueueEvent();
         l_event.ActiveEntityHandle = p_activeEntityHandle;
         l_event.Type = l_type;
         l_event.Event = p_event;
-        PendingEvents.Enqueue(l_event);
+        this.AttackEvents.Enqueue(l_event);
     }
+
+    public void push_death_event(BattleEntity_Handle p_activeEntityHandle, object p_event, BattleQueueEvent_Type l_type)
+    {
+        BattleQueueEvent l_event = new BattleQueueEvent();
+        l_event.ActiveEntityHandle = p_activeEntityHandle;
+        l_event.Type = l_type;
+        l_event.Event = p_event;
+        this.DeathEvents.Enqueue(l_event);
+    }
+
 }
