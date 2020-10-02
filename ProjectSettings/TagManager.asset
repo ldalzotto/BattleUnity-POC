@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - ATB_Bars_Background
+  - Main_Canvas
+  - Main_Camera
   layers:
   - Default
   - TransparentFX

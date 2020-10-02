@@ -159,9 +159,20 @@ public class BQE_Attack_UserDefined
 public class BQE_Damage_Apply
 {
     public BattleEntity Target;
+    //TODO -> This damage is raw. Future damage mitigation will be performed during the BattleResolutionStep
     public int DamageApplied;
 
     public static BQE_Damage_Apply Alloc() { return new BQE_Damage_Apply(); }
+}
+
+public class BQEOut_Damage_Applied
+{
+    public BattleEntity Target;
+    public int FinalDamageApplied;
+    public static BQEOut_Damage_Applied Alloc(BattleEntity p_target, int p_finalDamageApplied)
+    {
+        return new BQEOut_Damage_Applied { Target = p_target, FinalDamageApplied = p_finalDamageApplied }; 
+    }
 }
 
 public class BattleQueueEvent
@@ -192,6 +203,8 @@ public class BattleResolutionStep
     public List<BQE_Damage_Apply> DamageEvents;
     // public Queue<BattleQueueEvent> DeathEvents;
 
+    public List<BQEOut_Damage_Applied> Out_DamageApplied_Events;
+
     public Func<BattleQueueEvent, Initialize_ReturnCode> BattleQueueEventInitialize_UserFunction;
     public Func<BattleQueueEvent, Process_ReturnCode> BattleQueueEventProcess_UserFunction;
 
@@ -203,6 +216,7 @@ public class BattleResolutionStep
         l_resolution.AttackEvents = new Queue<BattleQueueEvent>();
         // l_resolution.DeathEvents = new Queue<BattleQueueEvent>();
         l_resolution.DamageEvents = new List<BQE_Damage_Apply>();
+        l_resolution.Out_DamageApplied_Events = new List<BQEOut_Damage_Applied>();
         return l_resolution;
     }
 
@@ -248,19 +262,22 @@ public class BattleResolutionStep
             Battle_Singletons._battle.unlock_ATB();
         }
 
-        if(this.DamageEvents.Count > 0)
+        if (this.DamageEvents.Count > 0)
         {
             for (int i = 0; i < this.DamageEvents.Count; i++)
             {
                 BQE_Damage_Apply l_damageEvent = this.DamageEvents[i];
+                //TOOD -> Calculate damage mitigation
                 if (Battle_Singletons._battle.apply_damage_raw(l_damageEvent.DamageApplied, l_damageEvent.Target))
                 {
                     l_damageEvent.Target.IsDead = true;
                 }
+
+                this.Out_DamageApplied_Events.Add(BQEOut_Damage_Applied.Alloc(l_damageEvent.Target, l_damageEvent.DamageApplied));
             }
             this.DamageEvents.Clear();
         }
-   
+
 
 
     }
