@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum Anim_BattleAttack_Default_State
@@ -24,10 +25,14 @@ public struct Anim_BattleAttack_Default
     float LastFrameDistace;
     public Anim_BattleAttack_Default_State State;
 
+    //TODO -> In the future, this will be a list with damage step asset (with type and value)
+    public int DamageStepCount;
+
     public void Initialize()
     {
         this.LastFrameDistace = Vector3.Distance(this.AnimatedTransform.position, this.TargetTransform.position);
         this.State = Anim_BattleAttack_Default_State.MovingForward;
+        this.DamageStepCount = 0;
         this.InitalAnimatedTransform_Position = this.AnimatedTransform.position;
         this.TargetPosition_MovingForward = this.AnimatedTransform.position + ((this.LastFrameDistace - this.Conf.DistanceFromTarget) * Vector3.Normalize(this.TargetTransform.position - this.AnimatedTransform.position));
     }
@@ -40,10 +45,11 @@ public struct Anim_BattleAttack_Default
                 {
                     float l_distance = Vector3.Distance(this.AnimatedTransform.position, this.TargetPosition_MovingForward);
 
-                    if ((l_distance > this.LastFrameDistace) || (l_distance == 0.0f))
+                    if ((l_distance > this.LastFrameDistace) || (l_distance <= 0.001f))
                     {
                         // We terminate the movement
                         this.AnimatedTransform.position = this.TargetPosition_MovingForward;
+                        this.DamageStepCount += 1;
                         this.State = Anim_BattleAttack_Default_State.MovingBackward;
 
                         this.LastFrameDistace = Vector3.Distance(this.InitalAnimatedTransform_Position, this.TargetPosition_MovingForward);
@@ -53,8 +59,7 @@ public struct Anim_BattleAttack_Default
                     Vector3 l_direction = Vector3.Normalize(this.TargetPosition_MovingForward - this.AnimatedTransform.position);
 
                     float l_distanceRatio = 1.0f - (l_distance / Vector3.Distance(this.TargetPosition_MovingForward, this.InitalAnimatedTransform_Position));
-                    Debug.Log(l_distanceRatio);
-
+                    
                     this.AnimatedTransform.position += l_direction * this.Conf.AnimatedTransform_Speed_V2.Evaluate(l_distanceRatio) * this.Conf.AnimatedTransform_Speed * delta;
 
                     this.LastFrameDistace = l_distance;
@@ -65,7 +70,7 @@ public struct Anim_BattleAttack_Default
 
                     float l_distance = Vector3.Distance(this.AnimatedTransform.position, this.InitalAnimatedTransform_Position);
 
-                    if ((l_distance > this.LastFrameDistace) || (l_distance == 0.0f))
+                    if ((l_distance > this.LastFrameDistace) || (l_distance <= 0.001f))
                     {
                         // We terminate the movement
                         this.AnimatedTransform.position = this.InitalAnimatedTransform_Position;

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class GameLoopComponent : MonoBehaviour
 {
@@ -114,7 +115,18 @@ public class BattleQueueConsumer
         {
             case BattleQueueEvent_Type.ATTACK:
                 {
-                    if(((BQE_Attack_SceneContext)this.CurrentExecutingEvent_SceneContext).Source.AnimationComponent.AnimBattle.State == Anim_BattleAttack_Default_State.End)
+                    BQE_Attack l_event = (BQE_Attack)p_event.Event;
+                    BQE_Attack_SceneContext l_context = (BQE_Attack_SceneContext)this.CurrentExecutingEvent_SceneContext;
+
+                    // Calculate and apply damages
+                    while(l_context.Source.AnimationComponent.AnimBattle.DamageStepCount > 0)
+                    {
+                        l_context.Source.AnimationComponent.AnimBattle.DamageStepCount -= 1;
+                        Battle_Singletons._battle.apply_damage_raw(1, l_event.Target.Handle);
+                    }
+
+                    // End event if necessary
+                    if (l_context.Source.AnimationComponent.AnimBattle.State == Anim_BattleAttack_Default_State.End)
                     {
                         return Process_ReturnCode.EVENT_FINISHED;
                     }
