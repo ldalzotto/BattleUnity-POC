@@ -67,6 +67,8 @@ public class GameLoopComponent : MonoBehaviour
             }
             Battle_Singletons._battleResolutionStep.Out_Death_Events.Clear();
         }
+
+        BattleEntityComponent_Container.Update(l_delta);
     }
 
 }

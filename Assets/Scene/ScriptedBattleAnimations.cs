@@ -109,16 +109,12 @@ public static class BattleAnimation_Initialize
                             case Attack_Type.DEFAULT:
                                 {
                                     BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source];
-                                    if (l_battleEntity.AnimationComponent != null)
-                                    {
-                                        l_event.Context_UserObject = new Anim_BattleAttack_Default();
-                                        ((Anim_BattleAttack_Default)l_event.Context_UserObject).Initialize(BattleEntityComponent_Container.ComponentsByHandle[l_event.Source].transform,
-                                            BattleEntityComponent_Container.ComponentsByHandle[l_event.Target].transform, SceneGlobalObjects.AnimationConfiguration);
-                                        l_battleEntity.AnimationComponent.push_attackAnimation(l_event, Anim_BattleAttack_Default.Update);
-                                        return Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED;
-                                    }
+                                    l_event.Context_UserObject = new Anim_BattleAttack_Default();
+                                    ((Anim_BattleAttack_Default)l_event.Context_UserObject).Initialize(BattleEntityComponent_Container.ComponentsByHandle[l_event.Source].transform,
+                                        BattleEntityComponent_Container.ComponentsByHandle[l_event.Target].transform, SceneGlobalObjects.AnimationConfiguration);
+                                    l_battleEntity.BattleAnimations.push_attackAnimation(l_event, Anim_BattleAttack_Default.Update);
+                                    return Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED;
                                 }
-                                break;
                         }
                     }
                 }
