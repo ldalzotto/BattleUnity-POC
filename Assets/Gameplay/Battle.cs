@@ -119,6 +119,7 @@ public enum Attack_Type
     DEFAULT = 0
 }
 
+//TODO -> In the future, this will have damage value and type
 public class AttackEvent_DamageStep
 {
     public BattleEntity Target;
@@ -131,7 +132,6 @@ public class BQE_Attack_UserDefined
     public BattleEntity Source;
     public BattleEntity Target;
 
-    //TODO -> In the future, this will be a list with damage step asset (with type and value)
     public List<AttackEvent_DamageStep> DamageSteps;
     public bool HasEnded;
 

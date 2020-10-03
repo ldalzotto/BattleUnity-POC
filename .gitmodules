@@ -1,0 +1,6 @@
+[submodule ".raw"]
+	path = .raw
+	url = https://github.com/ldalzotto/BattleUnity-POC_raw.git
+[submodule "Assets/@res"]
+	path = Assets/@res
+	url = https://github.com/ldalzotto/BattleUnity-POC_res.git

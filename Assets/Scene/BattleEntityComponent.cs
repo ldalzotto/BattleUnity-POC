@@ -27,6 +27,7 @@ public class BattleEntityComponent : MonoBehaviour
 
     /* Internal components */
     public BattleEntityComponent_Animation BattleAnimations;
+    public AnimatorEventDispatcherComponent AnimatorDispatcher;
 
     public void Initialize()
     {
@@ -35,6 +36,7 @@ public class BattleEntityComponent : MonoBehaviour
         this.BattleEntityHandle.Team = this.Team;
         this.BattleEntityHandle.ATB_Speed = this.ATB_Speed;
         this.BattleEntityHandle.Life = this.InitialHealth;
+        this.AnimatorDispatcher = this.GetComponentInChildren<AnimatorEventDispatcherComponent>();
 
         Battle_Singletons._battle.push_battleEntity(this.BattleEntityHandle);
         BattleEntityComponent_Container.ComponentsByHandle.Add(this.BattleEntityHandle, this);
