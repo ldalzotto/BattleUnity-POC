@@ -9,6 +9,7 @@ public static class BattleEntityComponent_Container
 
 public class BattleEntityComponent : MonoBehaviour
 {
+    public BattleEntity_Type Type;
     public BattleEntity_Team Team;
     public float ATB_Speed;
     public int InitialHealth;
@@ -25,6 +26,7 @@ public class BattleEntityComponent : MonoBehaviour
         /* .AnimatedTransform_Speed = 15.0f */
 
         this.BattleEntityHandle = BattleEntity.Alloc();
+        this.BattleEntityHandle.Type = this.Type;
         this.BattleEntityHandle.Team = this.Team;
         this.BattleEntityHandle.ATB_Speed = this.ATB_Speed;
         this.BattleEntityHandle.Life = this.InitialHealth;

@@ -3,7 +3,6 @@ using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
-using Unity.Collections.LowLevel.Unsafe;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -28,8 +27,15 @@ public enum BattleEntity_Team
     FOE = 1
 }
 
+public enum BattleEntity_Type
+{
+    DEFAULT = 0,
+    TEST = 1
+}
+
 public class BattleEntity
 {
+    public BattleEntity_Type Type;
     public BattleEntity_Team Team;
     public float ATB_Value;
     public float ATB_Speed;
@@ -68,7 +74,7 @@ public class Battle
 
                     if (l_entity.ATB_Value >= 1.0f)
                     {
-                        Battle_Algorithm.BattleEventPicker(this, l_entity);
+                        BattleDecision.Interface.decide_nextAction(this, l_entity);
                     }
                 }
 
@@ -100,59 +106,12 @@ public class Battle
     }
 }
 
-public static class Battle_Algorithm
-{
-    /// <summary>
-    /// Pick the right BattleQueueEvent and push it to the queue.
-    /// </summary>
-    /// <param name="p_actingEntity"></param>
-    public static void BattleEventPicker(Battle p_battle, BattleEntity p_actingEntity)
-    {
-        using (UnsafeList<int> l_targettableEntities = new UnsafeList<int>(0, Unity.Collections.Allocator.Temp))
-        {
-            switch (p_actingEntity.Team)
-            {
-                case BattleEntity_Team.PLAYER:
-                    {
-                        for (int i = 0; i < p_battle.BattleEntities.Count; i++)
-                        {
-                            if (p_battle.BattleEntities[i].Team != BattleEntity_Team.PLAYER)
-                            {
-                                l_targettableEntities.Add(i);
-                            }
-                        }
-                    }
-                    break;
-                case BattleEntity_Team.FOE:
-                    {
-                        for (int i = 0; i < p_battle.BattleEntities.Count; i++)
-                        {
-                            if (p_battle.BattleEntities[i].Team != BattleEntity_Team.FOE)
-                            {
-                                l_targettableEntities.Add(i);
-                            }
-                        }
-                    }
-                    break;
-            }
 
-            if (l_targettableEntities.Length > 0)
-            {
-                BattleEntity l_targettedEntity = p_battle.BattleEntities[l_targettableEntities[Random.Range(0, l_targettableEntities.Length)]];
-                BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Source = p_actingEntity, Target = l_targettedEntity };
-                Battle_Singletons._battleResolutionStep.push_attack_event(p_actingEntity, l_attackEvent, BattleQueueEvent_Type.ATTACK);
-            }
-        }
-
-    }
-
-}
 
 public enum BattleQueueEvent_Type
 {
     NOTHING = 0,
-    ATTACK = 1,
-    ATTACK_USERDEFINED = 2
+    ATTACK = 1
 }
 
 public class BQE_Attack_UserDefined
@@ -191,7 +150,6 @@ public class BattleQueueEvent
 
     public static BattleQueueEvent Alloc() { return new BattleQueueEvent(); }
 }
-
 
 public enum Initialize_ReturnCode
 {
