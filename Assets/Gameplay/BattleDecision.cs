@@ -52,8 +52,8 @@ static class BattleDecision
 
             if (l_targettedEntity != null)
             {
-                BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Source = p_actingEntity, Target = l_targettedEntity };
-                Battle_Singletons._battleResolutionStep.push_attack_event(p_actingEntity, l_attackEvent, BattleQueueEvent_Type.ATTACK);
+                BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { AttackType = Attack_Type.DEFAULT, Source = p_actingEntity, Target = l_targettedEntity };
+                Battle_Singletons._battleResolutionStep.push_attack_event(p_actingEntity, l_attackEvent);
             }
         }
     }

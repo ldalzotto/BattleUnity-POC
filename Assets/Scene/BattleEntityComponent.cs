@@ -19,10 +19,9 @@ public class BattleEntityComponent : MonoBehaviour
     /* Internal components */
     public AnimationComponent AnimationComponent;
 
-    public void Initialize(AnimationConfiguration p_animationConfiguration)
+    public void Initialize()
     {
         this.AnimationComponent = this.gameObject.AddComponent<AnimationComponent>();
-        this.AnimationComponent.AnimBattle.Conf = p_animationConfiguration.Anim_BattleAttack_Default;
         /* .AnimatedTransform_Speed = 15.0f */
 
         this.BattleEntityHandle = BattleEntity.Alloc();

@@ -114,13 +114,28 @@ public enum BattleQueueEvent_Type
     ATTACK = 1
 }
 
+public enum Attack_Type
+{
+    DEFAULT = 0
+}
+
+public class AttackEvent_DamageStep
+{
+    public BattleEntity Target;
+}
+
 public class BQE_Attack_UserDefined
 {
+    public Attack_Type AttackType;
+
     public BattleEntity Source;
     public BattleEntity Target;
 
-    public int UserObject_Context_Type;
-    public object UserObject_Context;
+    //TODO -> In the future, this will be a list with damage step asset (with type and value)
+    public List<AttackEvent_DamageStep> DamageSteps;
+    public bool HasEnded;
+
+    public object Context_UserObject;
 }
 
 public class BQE_Damage_Apply
@@ -156,12 +171,6 @@ public enum Initialize_ReturnCode
     NOTHING = 0,
     NEEDS_TO_BE_PROCESSED = 1
 }
-public enum Process_ReturnCode
-{
-    EVENT_FINISHED = 0,
-    EVENT_INPROGRESS = 1,
-    NO_EVENT_INPROGRESS = 2
-}
 
 public class BattleResolutionStep
 {
@@ -173,7 +182,7 @@ public class BattleResolutionStep
     public List<BattleEntity> Out_Death_Events;
 
     public Func<BattleQueueEvent, Initialize_ReturnCode> BattleQueueEventInitialize_UserFunction;
-    public Func<BattleQueueEvent, Process_ReturnCode> BattleQueueEventProcess_UserFunction;
+    // public Func<BattleQueueEvent, Process_ReturnCode> BattleQueueEventProcess_UserFunction;
 
     public BattleQueueEvent CurrentExecutingEvent = null;
 
@@ -214,15 +223,30 @@ public class BattleResolutionStep
         {
             Battle_Singletons._battle.lock_ATB();
 
-            switch (this.BattleQueueEventProcess_UserFunction.Invoke(this.CurrentExecutingEvent))
+
+            switch (this.CurrentExecutingEvent.Type)
             {
-                case Process_ReturnCode.EVENT_FINISHED:
+                case BattleQueueEvent_Type.ATTACK:
                     {
-                        Battle_Singletons._battle.entity_finishedAction(this.CurrentExecutingEvent.ActiveEntityHandle);
-                        this.CurrentExecutingEvent = null;
-                        goto step;
+                        BQE_Attack_UserDefined l_event = (BQE_Attack_UserDefined)this.CurrentExecutingEvent.Event;
+                        if(l_event.DamageSteps != null && l_event.DamageSteps.Count > 0)
+                        {
+                            for(int i=0;i< l_event.DamageSteps.Count;i++)
+                            {
+                                this.push_damage_event(l_event.DamageSteps[i].Target, 1);   
+                            }
+                            l_event.DamageSteps.Clear();
+                        }
+                        if (l_event.HasEnded)
+                        {
+                            Battle_Singletons._battle.entity_finishedAction(this.CurrentExecutingEvent.ActiveEntityHandle);
+                            this.CurrentExecutingEvent = null;
+                            goto step;
+                        }
                     }
+                    break;
             }
+
         }
         else
         {
@@ -251,11 +275,11 @@ public class BattleResolutionStep
     }
 
 
-    public void push_attack_event(BattleEntity p_activeEntityHandle, object p_event, BattleQueueEvent_Type l_type)
+    public void push_attack_event(BattleEntity p_activeEntityHandle, object p_event)
     {
         BattleQueueEvent l_event = BattleQueueEvent.Alloc();
         l_event.ActiveEntityHandle = p_activeEntityHandle;
-        l_event.Type = l_type;
+        l_event.Type = BattleQueueEvent_Type.ATTACK;
         l_event.Event = p_event;
         this.AttackEvents.Enqueue(l_event);
     }
@@ -266,7 +290,7 @@ public class BattleResolutionStep
         this.Out_Death_Events.Add(p_activeEntityHandle);
     }
 
-    public void push_damage_event(BattleEntity p_targettedEntity, int p_damageValue)
+    private void push_damage_event(BattleEntity p_targettedEntity, int p_damageValue)
     {
         BQE_Damage_Apply l_damageEvent = BQE_Damage_Apply.Alloc();
         l_damageEvent.DamageApplied = p_damageValue;

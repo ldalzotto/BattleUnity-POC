@@ -1,26 +1,32 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class AnimationComponent : MonoBehaviour
 {
-    public Anim_BattleAttack_Default AnimBattle;
+    // public Anim_BattleAttack_Default AnimBattle;
 
-    private void Start()
+    public BQE_Attack_UserDefined CurrentAnimationObject;
+    public Action<BQE_Attack_UserDefined, float> AnimationUpdateFunction;
+
+    public void push_attackAnimation(BQE_Attack_UserDefined p_attackAnimation, Action<BQE_Attack_UserDefined, float> p_animationUpdateFunction)
     {
-        this.AnimBattle.State = Anim_BattleAttack_Default_State.End;
-        // this.AnimBattle.Initialize();
+        this.CurrentAnimationObject = p_attackAnimation;
+        this.AnimationUpdateFunction = p_animationUpdateFunction;
     }
 
-    public void InitializeAnimation(Transform p_target)
-    {
-        this.AnimBattle.AnimatedTransform = transform;
-        this.AnimBattle.TargetTransform = p_target;
-        this.AnimBattle.Initialize();
-    }
 
     private void Update()
     {
-        this.AnimBattle.Update(Time.deltaTime);
+        if(this.AnimationUpdateFunction != null && this.CurrentAnimationObject != null)
+        {
+            this.AnimationUpdateFunction.Invoke(this.CurrentAnimationObject, Time.deltaTime);
+            if(this.CurrentAnimationObject.HasEnded)
+            {
+                this.AnimationUpdateFunction = null;
+                this.CurrentAnimationObject = null;
+            }
+        }
     }
 }
