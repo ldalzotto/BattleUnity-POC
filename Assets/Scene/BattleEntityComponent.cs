@@ -23,11 +23,13 @@ public class BattleEntityComponent : MonoBehaviour
     public float ATB_Speed;
     public int InitialHealth;
 
+    public Transform DamageDisplay_Transform;
     public BattleEntity BattleEntityHandle;
 
     /* Internal components */
     public BattleEntityComponent_Animation BattleAnimations;
     public AnimatorEventDispatcherComponent AnimatorDispatcher;
+
 
     public void Initialize()
     {

@@ -55,7 +55,7 @@ public class GameLoopComponent : MonoBehaviour
                 RectTransform l_instanciatedDamageTextObject = GameObject.Instantiate(this.DamageTextPrefab, SceneGlobalObjects.MainCanvas.transform);
                 Text l_instanciatedDamageText = l_instanciatedDamageTextObject.GetComponentInChildren<Text>();
                 l_instanciatedDamageText.text = l_event.FinalDamageApplied.ToString();
-                ((RectTransform)l_instanciatedDamageTextObject.transform).position = SceneGlobalObjects.MainCamera.WorldToScreenPoint(l_targetEntity.transform.position);
+                ((RectTransform)l_instanciatedDamageTextObject.transform).position = SceneGlobalObjects.MainCamera.WorldToScreenPoint(l_targetEntity.DamageDisplay_Transform.transform.position);
 
                 BattleAnimation.onDamageReceived(l_targetEntity);
             }
