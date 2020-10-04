@@ -24,7 +24,7 @@ public class GameLoopComponent : MonoBehaviour
         SceneGlobalObjects.AnimationConfiguration = this.AnimationConfiguration;
 
         Battle_Singletons.Alloc();
-        Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation_Initialize.init;
+        Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation.initialize_attackAnimation;
 
         BattleEntityComponent[] l_battleEntityComponents = GameObject.FindObjectsOfType<BattleEntityComponent>();
         for (int i = 0; i < l_battleEntityComponents.Length; i++)
@@ -50,10 +50,14 @@ public class GameLoopComponent : MonoBehaviour
             for (int i = 0; i < Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Count; i++)
             {
                 BQEOut_Damage_Applied l_event = Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events[i];
+                BattleEntityComponent l_targetEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Target];
+
                 RectTransform l_instanciatedDamageTextObject = GameObject.Instantiate(this.DamageTextPrefab, SceneGlobalObjects.MainCanvas.transform);
                 Text l_instanciatedDamageText = l_instanciatedDamageTextObject.GetComponentInChildren<Text>();
                 l_instanciatedDamageText.text = l_event.FinalDamageApplied.ToString();
-                ((RectTransform)l_instanciatedDamageTextObject.transform).position = SceneGlobalObjects.MainCamera.WorldToScreenPoint(BattleEntityComponent_Container.ComponentsByHandle[l_event.Target].transform.position);
+                ((RectTransform)l_instanciatedDamageTextObject.transform).position = SceneGlobalObjects.MainCamera.WorldToScreenPoint(l_targetEntity.transform.position);
+
+                BattleAnimation.onDamageReceived(l_targetEntity);
             }
             Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Clear();
         }

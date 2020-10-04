@@ -182,7 +182,6 @@ public class BattleResolutionStep
     public List<BattleEntity> Out_Death_Events;
 
     public Func<BattleQueueEvent, Initialize_ReturnCode> BattleQueueEventInitialize_UserFunction;
-    // public Func<BattleQueueEvent, Process_ReturnCode> BattleQueueEventProcess_UserFunction;
 
     public BattleQueueEvent CurrentExecutingEvent = null;
 

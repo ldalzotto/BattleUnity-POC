@@ -23,7 +23,7 @@ public class BattleEntityComponent : MonoBehaviour
     public float ATB_Speed;
     public int InitialHealth;
 
-    BattleEntity BattleEntityHandle;
+    public BattleEntity BattleEntityHandle;
 
     /* Internal components */
     public BattleEntityComponent_Animation BattleAnimations;

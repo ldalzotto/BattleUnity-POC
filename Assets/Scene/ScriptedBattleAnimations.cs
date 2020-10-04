@@ -14,6 +14,8 @@ public static class AnimatorStateConstants
     public static readonly string Attack_Close_MoveForward = "CharacterArmature|Attack_MoveForward";
     public static readonly string Attack_Distance_MoveForward = "CharacterArmature|Attack_Distance_MoveForward";
     public static readonly string Attack_Distance_Slash = "CharacterArmature|Attack_Distance_Slash";
+
+    public static readonly string Damage_Received = "CharacterArmature|Damage_Received";
 }
 
 
@@ -237,9 +239,9 @@ public class Anim_BattleAttack_Distance
     }
 }
 
-public static class BattleAnimation_Initialize
+public static class BattleAnimation
 {
-    public static Initialize_ReturnCode init(BattleQueueEvent p_event)
+    public static Initialize_ReturnCode initialize_attackAnimation(BattleQueueEvent p_event)
     {
         switch (p_event.Type)
         {
@@ -281,5 +283,17 @@ public static class BattleAnimation_Initialize
                 break;
         }
         return Initialize_ReturnCode.NOTHING;
+    }
+
+    public static void onDamageReceived(BattleEntityComponent p_target)
+    {
+        switch (p_target.BattleEntityHandle.Type)
+        {
+            default:
+                {
+                    p_target.AnimatorDispatcher.Animator.Play(AnimatorStateConstants.Damage_Received);
+                }
+                break;
+        }
     }
 }
