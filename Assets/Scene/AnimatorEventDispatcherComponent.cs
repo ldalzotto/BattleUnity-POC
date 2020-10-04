@@ -5,7 +5,9 @@ using UnityEngine;
 public enum AnimationEvent_Type
 {
     CharacterArmature_Attack_Begin_END = 0,
-    CharacterArmature_Attack_End_END = 1
+    CharacterArmature_Attack_End_END = 1,
+    CharacterArmature_Attack_Distance_MoveForward_END = 2,
+    CharacterArmature_Attack_Distance_Slash_END = 3,
 }
 
 public struct AnimatorEventDispatcher_Callback
@@ -44,6 +46,22 @@ public class AnimatorEventDispatcherComponent : MonoBehaviour
         if (this.Listener.Callback != null)
         {
             this.Listener.Callback.Invoke(this.Listener.Closure, AnimationEvent_Type.CharacterArmature_Attack_End_END);
+        }
+    }
+
+    public void CharacterArmature_Attack_Distance_MoveForward_END()
+    {
+        if (this.Listener.Callback != null)
+        {
+            this.Listener.Callback.Invoke(this.Listener.Closure, AnimationEvent_Type.CharacterArmature_Attack_Distance_MoveForward_END);
+        }
+    }
+
+    public void CharacterArmature_Attack_Distance_Slash_END()
+    {
+        if (this.Listener.Callback != null)
+        {
+            this.Listener.Callback.Invoke(this.Listener.Closure, AnimationEvent_Type.CharacterArmature_Attack_Distance_Slash_END);
         }
     }
 

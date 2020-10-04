@@ -30,7 +30,7 @@ public enum BattleEntity_Team
 public enum BattleEntity_Type
 {
     DEFAULT = 0,
-    TEST = 1
+    SOLIDER_MACHINEGUN_0 = 1
 }
 
 public class BattleEntity

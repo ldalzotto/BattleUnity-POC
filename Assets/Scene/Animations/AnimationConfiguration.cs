@@ -6,4 +6,5 @@ using UnityEngine;
 public class AnimationConfiguration : ScriptableObject
 {
     public Anim_BattleAttack_Default_Conf Anim_BattleAttack_Default;
+    public Anim_BattleAttack_Default_Conf Anim_BattleAttack_MachineGunSoldier;
 }

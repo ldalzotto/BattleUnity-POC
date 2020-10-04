@@ -65,6 +65,7 @@ static class BattleDecision
             switch (p_actingEntity.Type)
             {
                 case BattleEntity_Type.DEFAULT:
+                case BattleEntity_Type.SOLIDER_MACHINEGUN_0:
                     Algorithm.decide_nextAction_default(p_battle, p_actingEntity);
                     break;
                 default:
