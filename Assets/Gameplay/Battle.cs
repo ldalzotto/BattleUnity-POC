@@ -33,7 +33,7 @@ public class BattleEntity
     public BattleEntity_Type Type;
     public BattleEntity_Team Team;
     public float ATB_Speed;
-    // public BattleEntity_BaseStats Stats;
+    public BattleEntity_BaseStats Stats;
     // public List<AttackLine> AttackSet;
 
     public float ATB_Value;
@@ -247,7 +247,8 @@ public class BattleResolutionStep
             {
                 BaseDamageStep l_damageEvent = this.DamageEvents[i];
                 //TOOD -> Calculate damage mitigation
-                if (this._battle.apply_damage_raw(DamageCalculation_Algorithm.calculate(l_damageEvent), l_damageEvent.Target))
+                int l_appliedDamage = DamageCalculation_Algorithm.calculate(l_damageEvent);
+                if (this._battle.apply_damage_raw(l_appliedDamage, l_damageEvent.Target))
                 {
                     l_damageEvent.Target.IsDead = true;
                     push_death_event(l_damageEvent.Target);
@@ -255,7 +256,7 @@ public class BattleResolutionStep
                     this._battle.DeadBattleEntities.Add(l_damageEvent.Target);
                 }
 
-                this.Out_DamageApplied_Events.Add(BQEOut_Damage_Applied.Alloc(l_damageEvent.Target, l_damageEvent.BaseAttack.BaseDamage));
+                this.Out_DamageApplied_Events.Add(BQEOut_Damage_Applied.Alloc(l_damageEvent.Target, l_appliedDamage));
             }
             this.DamageEvents.Clear();
         }

@@ -20,6 +20,7 @@ public class BattleEntityComponent : MonoBehaviour
 {
     public BattleEntity_Type Type;
     public BattleEntity_Team Team;
+    public BattleEntity_BaseStats Stats;
     public float ATB_Speed;
     public int InitialHealth;
 
@@ -36,6 +37,7 @@ public class BattleEntityComponent : MonoBehaviour
         this.BattleEntityHandle = BattleEntity.Alloc();
         this.BattleEntityHandle.Type = this.Type;
         this.BattleEntityHandle.Team = this.Team;
+        this.BattleEntityHandle.Stats = this.Stats;
         this.BattleEntityHandle.ATB_Speed = this.ATB_Speed;
         this.BattleEntityHandle.Life = this.InitialHealth;
         this.AnimatorDispatcher = this.GetComponentInChildren<AnimatorEventDispatcherComponent>();

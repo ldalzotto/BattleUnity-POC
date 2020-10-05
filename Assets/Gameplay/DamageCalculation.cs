@@ -1,4 +1,7 @@
 ﻿
+using System;
+using UnityEngine;
+
 public struct BaseDamageStep
 {
     public BattleEntity Source;
@@ -11,6 +14,7 @@ public struct BaseDamageStep
     }
 }
 
+[Serializable]
 public struct BattleEntity_BaseStats
 {
     public int STR;
@@ -21,6 +25,7 @@ public static class DamageCalculation_Algorithm
 {
     public static int calculate(BaseDamageStep p_damageStep)
     {
-        return p_damageStep.BaseAttack.BaseDamage;
+        float l_mitigation = p_damageStep.Source.Stats.STR / (2.0f * p_damageStep.Target.Stats.DEF);
+        return Mathf.CeilToInt(p_damageStep.BaseAttack.BaseDamage * l_mitigation);
     }
 }
