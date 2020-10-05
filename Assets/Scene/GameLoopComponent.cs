@@ -25,7 +25,8 @@ public class GameLoopComponent : MonoBehaviour
 
         Battle_Singletons.Alloc();
         Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation.initialize_attackAnimation;
-
+        Battle_Singletons._battleResolutionStep.BattleActionDecision_UserFunction = BattleDecision_Specific.Interface.decide_nextAction;
+        
         BattleEntityComponent[] l_battleEntityComponents = GameObject.FindObjectsOfType<BattleEntityComponent>();
         for (int i = 0; i < l_battleEntityComponents.Length; i++)
         {
@@ -33,16 +34,14 @@ public class GameLoopComponent : MonoBehaviour
         }
 
         this.AtbUI = new ATB_UI();
-        this.AtbUI.Initialize(this.ATB_Line_Prefab, Battle_Singletons._battle);
+        this.AtbUI.Initialize(this.ATB_Line_Prefab, Battle_Singletons._battleResolutionStep._battle);
     }
 
     private void Update()
     {
         float l_delta = Time.deltaTime;
 
-
-        Battle_Singletons._battle.update(l_delta);
-        Battle_Singletons._battleResolutionStep.perform_step();
+        Battle_Singletons._battleResolutionStep.update(l_delta);
         this.AtbUI.Update(l_delta);
 
         if (Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Count > 0)
@@ -54,7 +53,7 @@ public class GameLoopComponent : MonoBehaviour
 
                 RectTransform l_instanciatedDamageTextObject = GameObject.Instantiate(this.DamageTextPrefab, SceneGlobalObjects.MainCanvas.transform);
                 Text l_instanciatedDamageText = l_instanciatedDamageTextObject.GetComponentInChildren<Text>();
-                l_instanciatedDamageText.text = l_event.FinalDamageApplied.ToString();
+                l_instanciatedDamageText.text = l_event.FinalDamage.ToString();
                 ((RectTransform)l_instanciatedDamageTextObject.transform).position = SceneGlobalObjects.MainCamera.WorldToScreenPoint(l_targetEntity.DamageDisplay_Transform.transform.position);
 
                 BattleAnimation.onDamageReceived(l_targetEntity);

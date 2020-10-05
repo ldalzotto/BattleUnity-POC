@@ -40,7 +40,7 @@ public class BattleEntityComponent : MonoBehaviour
         this.BattleEntityHandle.Life = this.InitialHealth;
         this.AnimatorDispatcher = this.GetComponentInChildren<AnimatorEventDispatcherComponent>();
 
-        Battle_Singletons._battle.push_battleEntity(this.BattleEntityHandle);
+        Battle_Singletons._battleResolutionStep._battle.push_battleEntity(this.BattleEntityHandle);
         BattleEntityComponent_Container.ComponentsByHandle.Add(this.BattleEntityHandle, this);
     }
 

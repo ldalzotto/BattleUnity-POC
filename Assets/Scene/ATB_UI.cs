@@ -7,13 +7,11 @@ public class ATB_UI
     private GameObject ATB_Bars_Background_GO;
     private ATB_UIComponent ATB_Line_Prefab;
 
-    private Battle _battle;
     private List<ATB_UIComponent> ATB_Lines;
 
     public void Initialize(ATB_UIComponent p_atb_line_prefab, Battle p_battle)
     {
         this.ATB_Lines = new List<ATB_UIComponent>();
-        this._battle = p_battle;
         this.ATB_Bars_Background_GO = GameObject.FindGameObjectWithTag(Tags.ATB_Bars_Background);
         this.ATB_Line_Prefab = p_atb_line_prefab;
 

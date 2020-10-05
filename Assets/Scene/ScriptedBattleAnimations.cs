@@ -32,8 +32,9 @@ public class Anim_BattleAttack_Default
 {
     /* PARAMETERS */
     public BattleEntityComponent AnimatedTransform;
-    public Anim_BattleAttack_Default_Conf Conf;
     public BattleEntityComponent TargetTransform;
+    public AttackDefinition Attack;
+    public Anim_BattleAttack_Default_Conf Conf;
 
     /*  */
     Vector3 InitalAnimatedTransform_Position;
@@ -49,10 +50,13 @@ public class Anim_BattleAttack_Default
     public float StandingStill_AfterSlash_Timer;
     public Anim_BattleAttack_Default_State State;
 
-    public void Initialize(BattleEntityComponent p_animatedTransform, BattleEntityComponent p_targetTransform, Anim_BattleAttack_Default_Conf p_animationConfiguration)
+    public void Initialize(BattleEntityComponent p_animatedTransform, BattleEntityComponent p_targetTransform, Anim_BattleAttack_Default_Conf p_animationConfiguration,
+        AttackDefinition p_attack)
     {
         this.AnimatedTransform = p_animatedTransform;
         this.TargetTransform = p_targetTransform;
+        this.Attack = p_attack;
+
         this.AnimatedTransform.AnimatorDispatcher.registerListener(this, Anim_BattleAttack_Default.OnAnimatorEvent);
 
         this.Conf = p_animationConfiguration;
@@ -91,8 +95,8 @@ public class Anim_BattleAttack_Default
                     {
                         // We terminate the movement
                         l_battleAttack.AnimatedTransform.transform.position = l_battleAttack.TargetPosition_MovingForward;
-                        if (p_attackEvent.DamageSteps == null) { p_attackEvent.DamageSteps = new List<AttackEvent_DamageStep>(); }
-                        p_attackEvent.DamageSteps.Add(new AttackEvent_DamageStep() { Target = p_attackEvent.Target });
+                        if (p_attackEvent.DamageSteps == null) { p_attackEvent.DamageSteps = new List<BaseDamageStep>(); }
+                        p_attackEvent.DamageSteps.Add(BaseDamageStep.build(p_attackEvent.Source, p_attackEvent.Target, p_attackEvent.Attack));
 
                         l_battleAttack.State = Anim_BattleAttack_Default_State.Slashing;
 
@@ -208,8 +212,8 @@ public class Anim_BattleAttack_Distance
         {
             case Anim_BattleAttack_Distance_State.End:
                 {
-                    if (p_attackEvent.DamageSteps == null) { p_attackEvent.DamageSteps = new List<AttackEvent_DamageStep>(); }
-                    p_attackEvent.DamageSteps.Add(new AttackEvent_DamageStep() { Target = p_attackEvent.Target });
+                    if (p_attackEvent.DamageSteps == null) { p_attackEvent.DamageSteps = new List<BaseDamageStep>(); }
+                    p_attackEvent.DamageSteps.Add(BaseDamageStep.build(p_attackEvent.Source, p_attackEvent.Target, p_attackEvent.Attack));
                     l_battleAttack.AnimatedTransform.transform.rotation = l_battleAttack.InitalAnimatedTransform_Rotation;
 
                     p_attackEvent.HasEnded = true;
@@ -250,7 +254,7 @@ public static class BattleAnimation
                     BQE_Attack_UserDefined l_event = (BQE_Attack_UserDefined)p_event.Event;
                     if (!l_event.Source.IsDead && !l_event.Target.IsDead)
                     {
-                        switch (l_event.AttackType)
+                        switch (l_event.Attack.AttackType)
                         {
                             case Attack_Type.DEFAULT:
                                 {
@@ -261,7 +265,7 @@ public static class BattleAnimation
                                                 BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source];
                                                 l_event.Context_UserObject = new Anim_BattleAttack_Default();
                                                 ((Anim_BattleAttack_Default)l_event.Context_UserObject).Initialize(BattleEntityComponent_Container.ComponentsByHandle[l_event.Source],
-                                                    BattleEntityComponent_Container.ComponentsByHandle[l_event.Target], SceneGlobalObjects.AnimationConfiguration.Anim_BattleAttack_Default);
+                                                    BattleEntityComponent_Container.ComponentsByHandle[l_event.Target], SceneGlobalObjects.AnimationConfiguration.Anim_BattleAttack_Default, l_event.Attack);
                                                 l_battleEntity.BattleAnimations.push_attackAnimation(l_event, Anim_BattleAttack_Default.Update);
                                                 return Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED;
                                             }
