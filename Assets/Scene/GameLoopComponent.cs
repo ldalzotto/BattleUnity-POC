@@ -7,6 +7,8 @@ public static class SceneGlobalObjects
     public static Canvas MainCanvas;
     public static Camera MainCamera;
     public static AnimationConfiguration AnimationConfiguration;
+
+    public static BattleActionSelectionUI BattleActionSelectionUI;
 }
 
 public class GameLoopComponent : MonoBehaviour
@@ -14,6 +16,7 @@ public class GameLoopComponent : MonoBehaviour
     public AnimationConfiguration AnimationConfiguration;
     public ATB_UIComponent ATB_Line_Prefab;
     public RectTransform DamageTextPrefab;
+    public RectTransform ActionSelectionMenuPrefab;
 
     ATB_UI AtbUI;
 
@@ -22,6 +25,7 @@ public class GameLoopComponent : MonoBehaviour
         SceneGlobalObjects.MainCamera = GameObject.FindGameObjectWithTag(Tags.Main_Camera).GetComponent<Camera>();
         SceneGlobalObjects.MainCanvas = GameObject.FindGameObjectWithTag(Tags.Main_Canvas).GetComponent<Canvas>();
         SceneGlobalObjects.AnimationConfiguration = this.AnimationConfiguration;
+        SceneGlobalObjects.BattleActionSelectionUI = BattleActionSelectionUI.alloc(this.ActionSelectionMenuPrefab);
 
         Battle_Singletons.Alloc();
         Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation.initialize_attackAnimation;
@@ -47,6 +51,11 @@ public class GameLoopComponent : MonoBehaviour
 
         if (Battle_Singletons._battleActionSelection.CurrentlySelectedEntity != null)
         {
+            if(!SceneGlobalObjects.BattleActionSelectionUI.isEnabled)
+            {
+                SceneGlobalObjects.BattleActionSelectionUI.enable();
+            }
+
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 BattleEntity l_targettedEntity = BattleDecision.Utils.find_battleEntity_ofTeam_random(Battle_Singletons._battleResolutionStep._battle, BattleEntity_Team.FOE);
@@ -59,6 +68,13 @@ public class GameLoopComponent : MonoBehaviour
             else if(Input.GetKeyDown(KeyCode.LeftControl))
             {
                 Battle_Singletons._battleActionSelection.switch_selection();
+            }
+        }
+        else
+        {
+            if (SceneGlobalObjects.BattleActionSelectionUI.isEnabled)
+            {
+                SceneGlobalObjects.BattleActionSelectionUI.disable();
             }
         }
 

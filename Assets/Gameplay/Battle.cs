@@ -136,6 +136,7 @@ public enum Initialize_ReturnCode
     NEEDS_TO_BE_PROCESSED = 1
 }
 
+//TODO -> finding a cleaner way to handle functional conditions.
 public class BattleResolutionStep
 {
     public Battle _battle;

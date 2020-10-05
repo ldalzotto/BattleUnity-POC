@@ -63,6 +63,8 @@ public class BattleActionSelection
                 this.CurrentlySelectedEntity = this.PlayerControlledEntity_WaitingForInput[l_pickedEntit_index];
             }
         }
+        //TODO -> If the currently selected entity is dead, we call switch_selection. The check can be donner in the caller function because we already have
+        //an event when an entity is dead (search Out_Death_Events).
 
     }
 
