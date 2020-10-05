@@ -56,6 +56,10 @@ public class GameLoopComponent : MonoBehaviour
                     Battle_Singletons._battleActionSelection.pushAction_forCurrentSelectedEntity(l_attackEvent);
                 }
             }
+            else if(Input.GetKeyDown(KeyCode.LeftControl))
+            {
+                Battle_Singletons._battleActionSelection.switch_selection();
+            }
         }
 
         Battle_Singletons._battleResolutionStep.update(l_delta);

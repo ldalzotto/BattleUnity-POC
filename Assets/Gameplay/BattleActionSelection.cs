@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class BattleActionSelection
 {
@@ -65,33 +66,29 @@ public class BattleActionSelection
 
     }
 
+    // (this.CurrentlySelectedEntity != null) condition is verified before
     public void pushAction_forCurrentSelectedEntity(BQE_Attack_UserDefined p_attackEvent)
     {
-        if (this.CurrentlySelectedEntity != null)
-        {
-            //Optional, as it must be provided, but just to be safe
-            p_attackEvent.Source = this.CurrentlySelectedEntity;
+        //Optional, as it must be provided, but just to be safe
+        p_attackEvent.Source = this.CurrentlySelectedEntity;
 
-            this.BattleResolution.push_attack_event(this.CurrentlySelectedEntity, p_attackEvent);
-            this.PlayerControlledEntity_ExecutingAction.Add(this.CurrentlySelectedEntity);
-            this.PlayerControlledEntity_WaitingForInput.Remove(this.CurrentlySelectedEntity);
+        this.BattleResolution.push_attack_event(this.CurrentlySelectedEntity, p_attackEvent);
+        this.PlayerControlledEntity_ExecutingAction.Add(this.CurrentlySelectedEntity);
+        this.PlayerControlledEntity_WaitingForInput.Remove(this.CurrentlySelectedEntity);
 
-            this.CurrentlySelectedEntity = null;
-        }
+        this.CurrentlySelectedEntity = null;
     }
 
-
-    // private void 
-}
-
-
-/*
-else
-{
-    if (!this.PlayerControlledEntityWaitingForAction.Contains(l_entity) &&
-        !this.PlayerControlledEntity_ExecutingAction.Contains(l_entity))
+    // (this.CurrentlySelectedEntity != null) condition is verified before
+    public void switch_selection()
     {
-        this.PlayerControlledEntityWaitingForAction.Add(l_entity);
+        int l_index = this.PlayerControlledEntity_WaitingForInput.IndexOf(this.CurrentlySelectedEntity) + 1;
+        if(l_index == this.PlayerControlledEntity_WaitingForInput.Count)
+        {
+            l_index = 0;
+        }
+        this.CurrentlySelectedEntity = this.PlayerControlledEntity_WaitingForInput[l_index];
+
+        Debug.Log(l_index);
     }
 }
-*/
