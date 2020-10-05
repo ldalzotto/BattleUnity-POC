@@ -26,6 +26,7 @@ public class BattleEntityComponent : MonoBehaviour
     public int InitialHealth;
 
     public Transform DamageDisplay_Transform;
+    public Transform AboveHead_Transform;
     public BattleEntity BattleEntityHandle;
 
     /* Internal components */

@@ -4,22 +4,51 @@ using UnityEngine;
 public class BattleActionSelectionUI
 {
     private BattleActionSelectionUIGameObject BattleActionSelectionUIGameObject;
+    private GameObject Cursor;
     public bool isEnabled;
+    private BattleEntityComponent currentlySelectedbattleEntityComponent;
 
-    public static BattleActionSelectionUI alloc(RectTransform p_actionSelectionMenuPrefab)
+    public static BattleActionSelectionUI alloc(RectTransform p_actionSelectionMenuPrefab, GameObject p_currentBattleActionSelectionEntityCursorPrefab)
     {
-        return new BattleActionSelectionUI() { BattleActionSelectionUIGameObject = BattleActionSelectionUIGameObject.build(p_actionSelectionMenuPrefab) };
+        BattleActionSelectionUI l_ui = new BattleActionSelectionUI();
+        l_ui.BattleActionSelectionUIGameObject = BattleActionSelectionUIGameObject.build(p_actionSelectionMenuPrefab);
+        l_ui.Cursor = GameObject.Instantiate(p_currentBattleActionSelectionEntityCursorPrefab);
+        l_ui.disable();
+        return l_ui;
     }
 
     public void enable()
     {
         this.BattleActionSelectionUIGameObject.enable();
+        this.Cursor.SetActive(true);
         this.isEnabled = true;
+    }
+
+    public void update(BattleActionSelection p_battleActionSelection)
+    {
+        if(p_battleActionSelection.CurrentlySelectedEntity_HasChanged)
+        {
+            if(p_battleActionSelection.CurrentlySelectedEntity != null)
+            {
+                this.currentlySelectedbattleEntityComponent = BattleEntityComponent_Container.ComponentsByHandle[p_battleActionSelection.CurrentlySelectedEntity];
+            }
+            else
+            {
+                this.currentlySelectedbattleEntityComponent = null;
+            }
+        }
+
+        //update transform
+        if (this.currentlySelectedbattleEntityComponent != null)
+        {
+            this.Cursor.transform.position = this.currentlySelectedbattleEntityComponent.AboveHead_Transform.transform.position;
+        }
     }
 
     public void disable()
     {
         this.BattleActionSelectionUIGameObject.disable();
+        this.Cursor.SetActive(false);
         this.isEnabled = false;
     }
 }

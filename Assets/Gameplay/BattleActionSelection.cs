@@ -9,6 +9,7 @@ public class BattleActionSelection
     public List<BattleEntity> PlayerControlledEntity_WaitingForInput;
     public List<BattleEntity> PlayerControlledEntity_ExecutingAction;
     public BattleEntity CurrentlySelectedEntity;
+    public bool CurrentlySelectedEntity_HasChanged;
 
     public static BattleActionSelection alloc()
     {
@@ -21,6 +22,8 @@ public class BattleActionSelection
 
     public void update(float d)
     {
+        this.CurrentlySelectedEntity_HasChanged = false;
+
         if (this.PlayerControlledEntity_ExecutingAction.Count > 0)
         {
             if (this.BattleResolution.Out_CompletedBattlequeue_Events.Count > 0)
@@ -60,12 +63,9 @@ public class BattleActionSelection
             if (this.PlayerControlledEntity_WaitingForInput.Count > 0)
             {
                 int l_pickedEntit_index = 0;
-                this.CurrentlySelectedEntity = this.PlayerControlledEntity_WaitingForInput[l_pickedEntit_index];
+                this.set_CurrentlySelectedEntity(this.PlayerControlledEntity_WaitingForInput[l_pickedEntit_index]);
             }
         }
-        //TODO -> If the currently selected entity is dead, we call switch_selection. The check can be donner in the caller function because we already have
-        //an event when an entity is dead (search Out_Death_Events).
-
     }
 
     // (this.CurrentlySelectedEntity != null) condition is verified before
@@ -78,19 +78,35 @@ public class BattleActionSelection
         this.PlayerControlledEntity_ExecutingAction.Add(this.CurrentlySelectedEntity);
         this.PlayerControlledEntity_WaitingForInput.Remove(this.CurrentlySelectedEntity);
 
-        this.CurrentlySelectedEntity = null;
+        this.set_CurrentlySelectedEntity(null);
     }
 
     // (this.CurrentlySelectedEntity != null) condition is verified before
     public void switch_selection()
     {
         int l_index = this.PlayerControlledEntity_WaitingForInput.IndexOf(this.CurrentlySelectedEntity) + 1;
-        if(l_index == this.PlayerControlledEntity_WaitingForInput.Count)
+        if (l_index == this.PlayerControlledEntity_WaitingForInput.Count)
         {
             l_index = 0;
         }
-        this.CurrentlySelectedEntity = this.PlayerControlledEntity_WaitingForInput[l_index];
+        this.set_CurrentlySelectedEntity(this.PlayerControlledEntity_WaitingForInput[l_index]);
 
         Debug.Log(l_index);
+    }
+
+    public void on_battleEntityDeath(BattleEntity p_deadbattleEntity)
+    {
+        if(this.CurrentlySelectedEntity == p_deadbattleEntity)
+        {
+            this.PlayerControlledEntity_WaitingForInput.Remove(p_deadbattleEntity);
+            this.set_CurrentlySelectedEntity(null);
+        }
+    }
+
+    private void set_CurrentlySelectedEntity(BattleEntity p_currentlySelectedEntity)
+    {
+        if (this.CurrentlySelectedEntity != p_currentlySelectedEntity)
+        { this.CurrentlySelectedEntity_HasChanged = true; }
+        this.CurrentlySelectedEntity = p_currentlySelectedEntity;
     }
 }

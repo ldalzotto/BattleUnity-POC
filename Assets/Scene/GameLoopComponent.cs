@@ -17,6 +17,7 @@ public class GameLoopComponent : MonoBehaviour
     public ATB_UIComponent ATB_Line_Prefab;
     public RectTransform DamageTextPrefab;
     public RectTransform ActionSelectionMenuPrefab;
+    public GameObject CurrentBattleActionSelectionEntityCursorPrefab;
 
     ATB_UI AtbUI;
 
@@ -25,7 +26,7 @@ public class GameLoopComponent : MonoBehaviour
         SceneGlobalObjects.MainCamera = GameObject.FindGameObjectWithTag(Tags.Main_Camera).GetComponent<Camera>();
         SceneGlobalObjects.MainCanvas = GameObject.FindGameObjectWithTag(Tags.Main_Canvas).GetComponent<Canvas>();
         SceneGlobalObjects.AnimationConfiguration = this.AnimationConfiguration;
-        SceneGlobalObjects.BattleActionSelectionUI = BattleActionSelectionUI.alloc(this.ActionSelectionMenuPrefab);
+        SceneGlobalObjects.BattleActionSelectionUI = BattleActionSelectionUI.alloc(this.ActionSelectionMenuPrefab, this.CurrentBattleActionSelectionEntityCursorPrefab);
 
         Battle_Singletons.Alloc();
         Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation.initialize_attackAnimation;
@@ -69,6 +70,9 @@ public class GameLoopComponent : MonoBehaviour
             {
                 Battle_Singletons._battleActionSelection.switch_selection();
             }
+
+            SceneGlobalObjects.BattleActionSelectionUI.update(Battle_Singletons._battleActionSelection);
+
         }
         else
         {
@@ -77,6 +81,7 @@ public class GameLoopComponent : MonoBehaviour
                 SceneGlobalObjects.BattleActionSelectionUI.disable();
             }
         }
+
 
         Battle_Singletons._battleResolutionStep.update(l_delta);
 
@@ -102,12 +107,18 @@ public class GameLoopComponent : MonoBehaviour
             Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Clear();
         }
 
+        // On battle entity death
         if (Battle_Singletons._battleResolutionStep.Out_Death_Events.Count > 0)
         {
             for (int i = 0; i < Battle_Singletons._battleResolutionStep.Out_Death_Events.Count; i++)
             {
                 BattleEntity l_deadEntity = Battle_Singletons._battleResolutionStep.Out_Death_Events[i];
-                BattleEntityComponent_Container.ComponentsByHandle[l_deadEntity].Dispose();
+                BattleEntityComponent l_destroyedEntityComponent = BattleEntityComponent_Container.ComponentsByHandle[l_deadEntity];
+
+                //handling selection UI
+                Battle_Singletons._battleActionSelection.on_battleEntityDeath(l_destroyedEntityComponent.BattleEntityHandle);
+
+                l_destroyedEntityComponent.Dispose();
             }
             Battle_Singletons._battleResolutionStep.Out_Death_Events.Clear();
         }
