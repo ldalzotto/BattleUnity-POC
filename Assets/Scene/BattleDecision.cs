@@ -43,5 +43,6 @@ public static class BattleDecision_Specific
                     break;
             }
         }
+
     }
 }

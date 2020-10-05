@@ -23,9 +23,11 @@ public struct BattleEntity_BaseStats
 
 public static class DamageCalculation_Algorithm
 {
+    //TODO -> More complicated calcuation of course
     public static int calculate(BaseDamageStep p_damageStep)
     {
         float l_mitigation = p_damageStep.Source.Stats.STR / (2.0f * p_damageStep.Target.Stats.DEF);
         return Mathf.CeilToInt(p_damageStep.BaseAttack.BaseDamage * l_mitigation);
     }
 }
+

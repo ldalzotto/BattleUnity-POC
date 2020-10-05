@@ -64,6 +64,7 @@ public class Anim_BattleAttack_Default
         this.LastFrameDistace = Vector3.Distance(this.AnimatedTransform.transform.position, this.TargetTransform.transform.position);
 
         this.State = (Anim_BattleAttack_Default_State)1;
+        // this.AnimatedTransform.AnimatorDispatcher.Animator.StartPlayback
         this.AnimatedTransform.AnimatorDispatcher.Animator.Play(AnimatorStateConstants.Attack_Close_Prepare);
 
         this.InitalAnimatedTransform_Position = this.AnimatedTransform.transform.position;

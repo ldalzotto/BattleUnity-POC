@@ -26,4 +26,5 @@ public static class BattleDecision
             return null;
         }
     }
+
 }

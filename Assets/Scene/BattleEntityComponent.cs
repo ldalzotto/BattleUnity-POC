@@ -22,6 +22,7 @@ public class BattleEntityComponent : MonoBehaviour
     public BattleEntity_Team Team;
     public BattleEntity_BaseStats Stats;
     public float ATB_Speed;
+    public bool IsControlledByPlayer;
     public int InitialHealth;
 
     public Transform DamageDisplay_Transform;
@@ -38,6 +39,7 @@ public class BattleEntityComponent : MonoBehaviour
         this.BattleEntityHandle.Type = this.Type;
         this.BattleEntityHandle.Team = this.Team;
         this.BattleEntityHandle.Stats = this.Stats;
+        this.BattleEntityHandle.IsControlledByPlayer = this.IsControlledByPlayer;
         this.BattleEntityHandle.ATB_Speed = this.ATB_Speed;
         this.BattleEntityHandle.Life = this.InitialHealth;
         this.AnimatorDispatcher = this.GetComponentInChildren<AnimatorEventDispatcherComponent>();

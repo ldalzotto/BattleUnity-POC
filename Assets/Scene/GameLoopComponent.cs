@@ -26,7 +26,9 @@ public class GameLoopComponent : MonoBehaviour
         Battle_Singletons.Alloc();
         Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation.initialize_attackAnimation;
         Battle_Singletons._battleResolutionStep.BattleActionDecision_UserFunction = BattleDecision_Specific.Interface.decide_nextAction;
-        
+
+        // Battle_Singletons._battleResolutionStep.BattleAction_OnCurrentActionExecuted_UserFunction = (BattleQueueEvent p_event) => { Battle_Singletons._battleActionSelection.on_battleActionCompleted(p_event); };
+
         BattleEntityComponent[] l_battleEntityComponents = GameObject.FindObjectsOfType<BattleEntityComponent>();
         for (int i = 0; i < l_battleEntityComponents.Length; i++)
         {
@@ -41,7 +43,26 @@ public class GameLoopComponent : MonoBehaviour
     {
         float l_delta = Time.deltaTime;
 
+        Battle_Singletons._battleActionSelection.update(l_delta);
+
+        if (Battle_Singletons._battleActionSelection.CurrentlySelectedEntity != null)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                BattleEntity l_targettedEntity = BattleDecision.Utils.find_battleEntity_ofTeam_random(Battle_Singletons._battleResolutionStep._battle, BattleEntity_Team.FOE);
+                if (l_targettedEntity != null)
+                {
+                    BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Attack = AttackDefinition.build(Attack_Type.DEFAULT, 2), Source = Battle_Singletons._battleActionSelection.CurrentlySelectedEntity, Target = l_targettedEntity };
+                    Battle_Singletons._battleActionSelection.pushAction_forCurrentSelectedEntity(l_attackEvent);
+                }
+            }
+        }
+
         Battle_Singletons._battleResolutionStep.update(l_delta);
+
+
+
+
         this.AtbUI.Update(l_delta);
 
         if (Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Count > 0)
