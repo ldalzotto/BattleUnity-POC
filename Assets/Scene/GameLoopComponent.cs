@@ -6,7 +6,6 @@ public static class SceneGlobalObjects
 {
     public static Canvas MainCanvas;
     public static Camera MainCamera;
-    public static AnimationConfiguration AnimationConfiguration;
 
     public static BattleActionSelectionUI BattleActionSelectionUI;
     public static BattleTargetSelectionUI BattleTargetSelectionUI;
@@ -16,7 +15,6 @@ public static class SceneGlobalObjects
 
 public class GameLoopComponent : MonoBehaviour
 {
-    public AnimationConfiguration AnimationConfiguration;
     public ATB_UIComponent ATB_Line_Prefab;
     public RectTransform DamageTextPrefab;
     public RectTransform ActionSelectionMenuPrefab;
@@ -29,7 +27,6 @@ public class GameLoopComponent : MonoBehaviour
     {
         SceneGlobalObjects.MainCamera = GameObject.FindGameObjectWithTag(Tags.Main_Camera).GetComponent<Camera>();
         SceneGlobalObjects.MainCanvas = GameObject.FindGameObjectWithTag(Tags.Main_Canvas).GetComponent<Canvas>();
-        SceneGlobalObjects.AnimationConfiguration = this.AnimationConfiguration;
         SceneGlobalObjects.BattleActionSelectionUI = BattleActionSelectionUI.alloc(this.ActionSelectionMenuPrefab, this.CurrentBattleActionSelectionEntityCursorPrefab);
         SceneGlobalObjects.BattleTargetSelectionUI = BattleTargetSelectionUI.alloc(this.BattleTargetSelectionUIGameObjectPrefab);
         SceneGlobalObjects.PlayerTurnInputflow = BattleSelectionFlow.build();

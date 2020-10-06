@@ -261,12 +261,21 @@ public static class BattleAnimation
                                 {
                                     switch (l_event.Source.Type)
                                     {
-                                        case BattleEntity_Type.DEFAULT:
+                                        case BattleEntity_Type.PLAYER_1:
                                             {
                                                 BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source];
                                                 l_event.Context_UserObject = new Anim_BattleAttack_Default();
                                                 ((Anim_BattleAttack_Default)l_event.Context_UserObject).Initialize(BattleEntityComponent_Container.ComponentsByHandle[l_event.Source],
-                                                    BattleEntityComponent_Container.ComponentsByHandle[l_event.Target], SceneGlobalObjects.AnimationConfiguration.Anim_BattleAttack_Default, l_event.Attack);
+                                                    BattleEntityComponent_Container.ComponentsByHandle[l_event.Target], ((PLAYER_1_conf)l_battleEntity.BattleEntityConfiguration).Animation_DefaultAttack, l_event.Attack);
+                                                l_battleEntity.BattleAnimations.push_attackAnimation(l_event, Anim_BattleAttack_Default.Update);
+                                                return Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED;
+                                            }
+                                        case BattleEntity_Type.PLAYER_2:
+                                            {
+                                                BattleEntityComponent l_battleEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Source];
+                                                l_event.Context_UserObject = new Anim_BattleAttack_Default();
+                                                ((Anim_BattleAttack_Default)l_event.Context_UserObject).Initialize(BattleEntityComponent_Container.ComponentsByHandle[l_event.Source],
+                                                    BattleEntityComponent_Container.ComponentsByHandle[l_event.Target], ((PLAYER_2_conf)l_battleEntity.BattleEntityConfiguration).Animation_DefaultAttack, l_event.Attack);
                                                 l_battleEntity.BattleAnimations.push_attackAnimation(l_event, Anim_BattleAttack_Default.Update);
                                                 return Initialize_ReturnCode.NEEDS_TO_BE_PROCESSED;
                                             }

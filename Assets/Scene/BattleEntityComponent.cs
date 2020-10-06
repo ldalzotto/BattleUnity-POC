@@ -25,6 +25,8 @@ public class BattleEntityComponent : MonoBehaviour
     public bool IsControlledByPlayer;
     public int InitialHealth;
 
+    public BattleEntityConfiguration_Abstract BattleEntityConfiguration;
+
     public Transform DamageDisplay_Transform;
     public Transform AboveHead_Transform;
     public BattleEntity BattleEntityHandle;

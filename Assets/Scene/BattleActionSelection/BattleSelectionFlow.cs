@@ -51,7 +51,7 @@ public struct BattleSelectionFlow
 
                             BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined
                             {
-                                Attack = AttackDefinition.build(Attack_Type.DEFAULT, 2),
+                                Attack = BattleAttackConfiguration_Algorithm.find_defaultAttackDefinition(BattleEntityComponent_Container.ComponentsByHandle[Battle_Singletons._battleActionSelection.CurrentlySelectedEntity]),
                                 Source = Battle_Singletons._battleActionSelection.CurrentlySelectedEntity,
                                 Target = Battle_Singletons._battleResolutionStep._battle.BattleEntities[Battle_Singletons._battleTargetSelection.CurrentlySelectedEntity_BattleIndex]
                             };

@@ -1,10 +1,13 @@
-# Associating player controlled BattleEntity_Type to default attack. This way, the default attack can be 
-  used in a generic manner when the PLayer trigger an attack.
-
 # Having a smarter way to handle played animations. Instead of calling the Animation api (Animation.Play),
   we can introduce an additional layer that programatically handle animation states.
   For example, if the event X is triggered when the animation ANIMX is ended. While ANIMX is playing, if 
   "Animation.Play" is called with another animation, the the event X will be skipped. This can cause the game to be
   stuck in some waiting loop.
   By linking animation enum and event enums, maybe that we can trigger events, even if the animation is skipped.
+
+
+-- DONE --
+
+# Associating player controlled BattleEntity_Type to default attack. This way, the default attack can be 
+  used in a generic manner when the PLayer trigger an attack.
 

@@ -4,7 +4,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using System;
-using System.Runtime.CompilerServices;
 
 public class Battle_Singletons
 {
@@ -29,7 +28,9 @@ public enum BattleEntity_Team
 public enum BattleEntity_Type
 {
     DEFAULT = 0,
-    SOLIDER_MACHINEGUN_0 = 1
+    SOLIDER_MACHINEGUN_0 = 1,
+    PLAYER_1 = 2,
+    PLAYER_2 = 3
 }
 
 public class BattleEntity
@@ -90,15 +91,11 @@ public enum Attack_Type
     DEFAULT = 0
 }
 
+[Serializable]
 public struct AttackDefinition
 {
     public Attack_Type AttackType;
     public int BaseDamage;
-
-    public static AttackDefinition build(Attack_Type p_attackType, int p_baseDamage)
-    {
-        return new AttackDefinition() { AttackType = p_attackType, BaseDamage = p_baseDamage };
-    }
 }
 
 public class BQE_Attack_UserDefined

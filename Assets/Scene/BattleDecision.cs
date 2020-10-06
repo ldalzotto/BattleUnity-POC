@@ -29,13 +29,11 @@ public static class BattleDecision_Specific
     {
         public static void decide_nextAction(Battle p_battle, BattleEntity p_actingEntity)
         {
+            BattleEntityComponent l_actingEntityComponent = BattleEntityComponent_Container.ComponentsByHandle[p_actingEntity];
             switch (p_actingEntity.Type)
             {
-                case BattleEntity_Type.DEFAULT:
-                    decide_nextAction_default(p_battle, p_actingEntity, AttackDefinition.build(Attack_Type.DEFAULT, 2));
-                    break;
                 case BattleEntity_Type.SOLIDER_MACHINEGUN_0:
-                    decide_nextAction_default(p_battle, p_actingEntity, AttackDefinition.build(Attack_Type.DEFAULT, 1));
+                    decide_nextAction_default(p_battle, p_actingEntity, ((SOLIDER_MACHINEGUN_0_conf)l_actingEntityComponent.BattleEntityConfiguration).DefaultAttack.AttackDefinition);
                     break;
                 default:
                     //TODO -> Introducing an attack of type NONE that does nothing but reset the ATB value of the Entity.
