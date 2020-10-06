@@ -5,7 +5,7 @@ public static class BattleDecision
 {
     public static class Utils
     {
-        public static BattleEntity find_battleEntity_ofTeam_random(Battle p_battle, BattleEntity_Team p_team)
+        public static BattleEntity find_battleEntity_ofTeam_random(BattleResolutionStep p_battle, BattleEntity_Team p_team)
         {
             using (UnsafeList<int> l_targettableEntities = new UnsafeList<int>(0, Unity.Collections.Allocator.Temp))
             {

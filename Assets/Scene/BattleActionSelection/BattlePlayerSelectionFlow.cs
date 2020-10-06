@@ -4,17 +4,30 @@ using UnityEngine;
 public enum BattleSelectionFlowState
 {
     NOTHING = 0,
+
+    /// <summary>
+    /// When a battle entity is ready to perform an action, and the player is not selecting anything.
+    /// Basically, the menu is unselected
+    /// </summary>
     IN_ACTIONSELECTION_MENU = 1,
+
+    /// <summary>
+    /// When the player is selecting a battle entity to target 
+    /// </summary>
     TARGETTING_ENTITY = 2
 }
 
-public struct BattleSelectionFlow
+/// <summary>
+/// System responsible fo the execution flow of player input in combat.
+/// Updates dynamic UI objects related to battle entity selection.
+/// </summary>
+public struct BattlePlayerSelectionFlow
 {
     public BattleSelectionFlowState State;
 
-    public static BattleSelectionFlow build()
+    public static BattlePlayerSelectionFlow build()
     {
-        return new BattleSelectionFlow() { State = 0 };
+        return new BattlePlayerSelectionFlow() { State = 0 };
     }
 
     public void update(float d)
@@ -47,13 +60,11 @@ public struct BattleSelectionFlow
                     {
                         if (Input.GetKeyDown(KeyCode.Space))
                         {
-                            //BattleDecision.Utils.find_battleEntity_ofTeam_random(Battle_Singletons._battleResolutionStep._battle, BattleEntity_Team.FOE);
-
-                            BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined
+                            BQE_Attack l_attackEvent = new BQE_Attack
                             {
                                 Attack = BattleAttackConfiguration_Algorithm.find_defaultAttackDefinition(BattleEntityComponent_Container.ComponentsByHandle[Battle_Singletons._battleActionSelection.CurrentlySelectedEntity]),
                                 Source = Battle_Singletons._battleActionSelection.CurrentlySelectedEntity,
-                                Target = Battle_Singletons._battleResolutionStep._battle.BattleEntities[Battle_Singletons._battleTargetSelection.CurrentlySelectedEntity_BattleIndex]
+                                Target = Battle_Singletons._battleResolutionStep.BattleEntities[Battle_Singletons._battleTargetSelection.CurrentlySelectedEntity_BattleIndex]
                             };
                             Battle_Singletons._battleActionSelection.pushAction_forCurrentSelectedEntity(l_attackEvent);
 
@@ -103,6 +114,7 @@ public struct BattleSelectionFlow
     {
         if (this.State != p_newState)
         {
+            // We are exiting the current state
             switch (this.State)
             {
                 case BattleSelectionFlowState.NOTHING:
@@ -112,6 +124,7 @@ public struct BattleSelectionFlow
                         {
                             case BattleSelectionFlowState.TARGETTING_ENTITY:
                                 {
+                                    //TODO -> target selection filter won't always be BattleEntity_Team.FOE
                                     Battle_Singletons._battleTargetSelection.enable(BattleTargetSelection_FilterCriteria.build(BattleEntity_Team.FOE));
                                 }
                                 break;
@@ -132,13 +145,16 @@ public struct BattleSelectionFlow
 
     public void on_battleEntityDeath(BattleEntityComponent p_deadBattleEntityComponent)
     {
-        if (Battle_Singletons._battleActionSelection.CurrentlySelectedEntity == p_deadBattleEntityComponent.BattleEntityHandle)
+        switch(this.State)
         {
-            if (this.State == BattleSelectionFlowState.TARGETTING_ENTITY)
-            {
-                this.set_state(BattleSelectionFlowState.IN_ACTIONSELECTION_MENU);
-            }
+            case BattleSelectionFlowState.TARGETTING_ENTITY:
+                {
+                    if (Battle_Singletons._battleActionSelection.CurrentlySelectedEntity == p_deadBattleEntityComponent.BattleEntityHandle)
+                    {
+                        this.set_state(BattleSelectionFlowState.IN_ACTIONSELECTION_MENU);
+                    }
+                }
+                break;
         }
-
     }
 }

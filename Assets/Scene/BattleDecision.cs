@@ -1,7 +1,7 @@
 ﻿
 public static class BattleDecision_Specific
 {
-    private static void decide_nextAction_default(Battle p_battle, BattleEntity p_actingEntity, AttackDefinition p_attack)
+    private static void decide_nextAction_default(BattleResolutionStep p_battle, BattleEntity p_actingEntity, AttackDefinition p_attack)
     {
         BattleEntity l_targettedEntity = null;
         switch (p_actingEntity.Team)
@@ -20,14 +20,14 @@ public static class BattleDecision_Specific
 
         if (l_targettedEntity != null)
         {
-            BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Attack = p_attack, Source = p_actingEntity, Target = l_targettedEntity };
+            BQE_Attack l_attackEvent = new BQE_Attack { Attack = p_attack, Source = p_actingEntity, Target = l_targettedEntity };
             Battle_Singletons._battleResolutionStep.push_attack_event(p_actingEntity, l_attackEvent);
         }
     }
 
     public static class Interface
     {
-        public static void decide_nextAction(Battle p_battle, BattleEntity p_actingEntity)
+        public static void decide_nextAction(BattleResolutionStep p_battle, BattleEntity p_actingEntity)
         {
             BattleEntityComponent l_actingEntityComponent = BattleEntityComponent_Container.ComponentsByHandle[p_actingEntity];
             switch (p_actingEntity.Type)

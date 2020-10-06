@@ -29,5 +29,12 @@ public static class DamageCalculation_Algorithm
         float l_mitigation = p_damageStep.Source.Stats.STR / (2.0f * p_damageStep.Target.Stats.DEF);
         return Mathf.CeilToInt(p_damageStep.BaseAttack.BaseDamage * l_mitigation);
     }
+
+    public static bool apply_damage_raw(int p_appliedDamage, BattleEntity p_hittedEntity)
+    {
+        p_hittedEntity.Life -= p_appliedDamage;
+        p_hittedEntity.Life = Math.Max(p_hittedEntity.Life, 0);
+        return p_hittedEntity.Life == 0;
+    }
 }
 

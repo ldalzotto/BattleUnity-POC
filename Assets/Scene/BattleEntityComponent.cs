@@ -47,7 +47,7 @@ public class BattleEntityComponent : MonoBehaviour
         this.BattleEntityHandle.Life = this.InitialHealth;
         this.AnimatorDispatcher = this.GetComponentInChildren<AnimatorEventDispatcherComponent>();
 
-        Battle_Singletons._battleResolutionStep._battle.push_battleEntity(this.BattleEntityHandle);
+        Battle_Singletons._battleResolutionStep.push_battleEntity(this.BattleEntityHandle);
         BattleEntityComponent_Container.ComponentsByHandle.Add(this.BattleEntityHandle, this);
     }
 
@@ -66,10 +66,10 @@ public class BattleEntityComponent : MonoBehaviour
 
 public struct BattleEntityComponent_Animation
 {
-    public BQE_Attack_UserDefined CurrentAnimationObject;
-    public Action<BQE_Attack_UserDefined, float> AnimationUpdateFunction;
+    public BQE_Attack CurrentAnimationObject;
+    public Action<BQE_Attack, float> AnimationUpdateFunction;
 
-    public void push_attackAnimation(BQE_Attack_UserDefined p_attackAnimation, Action<BQE_Attack_UserDefined, float> p_animationUpdateFunction)
+    public void push_attackAnimation(BQE_Attack p_attackAnimation, Action<BQE_Attack, float> p_animationUpdateFunction)
     {
         this.CurrentAnimationObject = p_attackAnimation;
         this.AnimationUpdateFunction = p_animationUpdateFunction;

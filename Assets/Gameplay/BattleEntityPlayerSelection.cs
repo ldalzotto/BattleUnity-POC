@@ -2,18 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BattleActionSelection
+/// <summary>
+/// System that holds the currently played BattleEntity by the player.
+/// </summary>
+public class BattleEntityPlayerSelection
 {
     public BattleResolutionStep BattleResolution;
 
-    public List<BattleEntity> PlayerControlledEntity_WaitingForInput;
-    public List<BattleEntity> PlayerControlledEntity_ExecutingAction;
+    // Do not set this variable, instead, call set_CurrentlySelectedEntity
     public BattleEntity CurrentlySelectedEntity;
     public bool CurrentlySelectedEntity_HasChanged;
 
-    public static BattleActionSelection alloc(BattleResolutionStep p_battleResolution)
+    // List of BattleEntity that are available for player control.
+    private List<BattleEntity> PlayerControlledEntity_WaitingForInput;
+    // List of BattleEntity for which the player have made an input action, but the action is currently exectued by the BattleResolutionStep.
+    private List<BattleEntity> PlayerControlledEntity_ExecutingAction;
+
+    public static BattleEntityPlayerSelection alloc(BattleResolutionStep p_battleResolution)
     {
-        BattleActionSelection l_battleActionSelection = new BattleActionSelection();
+        BattleEntityPlayerSelection l_battleActionSelection = new BattleEntityPlayerSelection();
         l_battleActionSelection.BattleResolution = p_battleResolution;
         l_battleActionSelection.PlayerControlledEntity_WaitingForInput = new List<BattleEntity>();
         l_battleActionSelection.PlayerControlledEntity_ExecutingAction = new List<BattleEntity>();
@@ -24,6 +31,7 @@ public class BattleActionSelection
     {
         this.CurrentlySelectedEntity_HasChanged = false;
 
+        // We check is last frame completed battle events matches any of entity in PlayerControlledEntity_ExecutingAction.
         if (this.PlayerControlledEntity_ExecutingAction.Count > 0)
         {
             if (this.BattleResolution.Out_CompletedBattlequeue_Events.Count > 0)
@@ -36,6 +44,7 @@ public class BattleActionSelection
                     {
                         BattleEntity l_controllableEntity_currentlyExecutingAction = this.PlayerControlledEntity_ExecutingAction[j];
 
+                        // We remove the entity from PlayerControlledEntity_ExecutingAction is that's the case
                         if (l_event.ActiveEntityHandle == l_controllableEntity_currentlyExecutingAction)
                         {
                             this.PlayerControlledEntity_ExecutingAction.RemoveAt(j);
@@ -46,9 +55,10 @@ public class BattleActionSelection
             }
         }
 
-        for (int i = 0; i < this.BattleResolution._battle.BattleEntities.Count; i++)
+        // We check if any battle entiy matches the condition for being able to be controlled by the player.
+        for (int i = 0; i < this.BattleResolution.BattleEntities.Count; i++)
         {
-            BattleEntity l_entity = this.BattleResolution._battle.BattleEntities[i];
+            BattleEntity l_entity = this.BattleResolution.BattleEntities[i];
             if (l_entity.IsControlledByPlayer && l_entity.ATB_Value >= 1.0f)
             {
                 if (!this.PlayerControlledEntity_WaitingForInput.Contains(l_entity) && !this.PlayerControlledEntity_ExecutingAction.Contains(l_entity))
@@ -58,6 +68,7 @@ public class BattleActionSelection
             }
         }
 
+        // We perform a default selection if there is no currently selected entity
         if (CurrentlySelectedEntity == null)
         {
             if (this.PlayerControlledEntity_WaitingForInput.Count > 0)
@@ -69,7 +80,7 @@ public class BattleActionSelection
     }
 
     // (this.CurrentlySelectedEntity != null) condition is verified before
-    public void pushAction_forCurrentSelectedEntity(BQE_Attack_UserDefined p_attackEvent)
+    public void pushAction_forCurrentSelectedEntity(BQE_Attack p_attackEvent)
     {
         //Optional, as it must be provided, but just to be safe
         p_attackEvent.Source = this.CurrentlySelectedEntity;
@@ -94,11 +105,17 @@ public class BattleActionSelection
         Debug.Log(l_index);
     }
 
+    /// <summary>
+    /// If the dead battle entity is the currently selected, we clear selection and remove it from PlayerControlledEntity_WaitingForInput. 
+    /// /!\ This method must be called only when death events are processed.
+    /// </summary>
+    /// <param name="p_deadbattleEntity"></param>
     public void on_battleEntityDeath(BattleEntity p_deadbattleEntity)
     {
         if (this.CurrentlySelectedEntity == p_deadbattleEntity)
         {
             this.PlayerControlledEntity_WaitingForInput.Remove(p_deadbattleEntity);
+            this.PlayerControlledEntity_ExecutingAction.Remove(p_deadbattleEntity);
             this.set_CurrentlySelectedEntity(null);
         }
     }
@@ -111,20 +128,24 @@ public class BattleActionSelection
     }
 }
 
-public class BattleTargetSelection
+/// <summary>
+/// System that holds the currently target BattleEntity by the player.
+/// </summary>
+public class BattleEntityTargetSelection
 {
     public BattleResolutionStep BattleResolutionStep;
     private bool isEnabled;
     public bool CurrentlySelectedEntity_HasChanged;
     public int CurrentlySelectedEntity_BattleIndex;
 
+    // Filter used against all battle entity to check if they are elligible for targetting
     private BattleTargetSelection_FilterCriteria FilterCriteria;
 
     public static readonly int CurrentlySelectedEntity_BattleIndex_None = -1;
 
-    public static BattleTargetSelection alloc(BattleResolutionStep p_battleResolutionStep)
+    public static BattleEntityTargetSelection alloc(BattleResolutionStep p_battleResolutionStep)
     {
-        BattleTargetSelection l_targetSelection = new BattleTargetSelection() { BattleResolutionStep = p_battleResolutionStep };
+        BattleEntityTargetSelection l_targetSelection = new BattleEntityTargetSelection() { BattleResolutionStep = p_battleResolutionStep };
         l_targetSelection.CurrentlySelectedEntity_BattleIndex = CurrentlySelectedEntity_BattleIndex_None;
         return l_targetSelection;
     }
@@ -153,11 +174,11 @@ public class BattleTargetSelection
         this.CurrentlySelectedEntity_HasChanged = false;
         if (this.isEnabled)
         {
+            // If enabled and there is no selected entity, we pick the first available one
             if (this.CurrentlySelectedEntity_BattleIndex == CurrentlySelectedEntity_BattleIndex_None)
             {
                 this.select_firstAvailableEntity();
             }
-
         }
     }
 
@@ -166,14 +187,14 @@ public class BattleTargetSelection
         if (this.CurrentlySelectedEntity_BattleIndex != CurrentlySelectedEntity_BattleIndex_None)
         {
             int l_newIndex = this.CurrentlySelectedEntity_BattleIndex + 1;
-            if (l_newIndex == this.BattleResolutionStep._battle.BattleEntities.Count)
+            if (l_newIndex == this.BattleResolutionStep.BattleEntities.Count)
             {
                 l_newIndex = 0;
             }
 
             while (l_newIndex != this.CurrentlySelectedEntity_BattleIndex)
             {
-                if (this.FilterCriteria.isBattleEntity_compliant(this.BattleResolutionStep._battle.BattleEntities[l_newIndex]))
+                if (this.FilterCriteria.isBattleEntity_compliant(this.BattleResolutionStep.BattleEntities[l_newIndex]))
                 {
                     set_CurrentlySelectedEntity(l_newIndex);
                     return;
@@ -181,7 +202,7 @@ public class BattleTargetSelection
 
 
                 l_newIndex += 1;
-                if (l_newIndex == this.BattleResolutionStep._battle.BattleEntities.Count)
+                if (l_newIndex == this.BattleResolutionStep.BattleEntities.Count)
                 {
                     l_newIndex = 0;
                 }
@@ -200,9 +221,9 @@ public class BattleTargetSelection
 
     private void select_firstAvailableEntity()
     {
-        for (int i = 0; i < this.BattleResolutionStep._battle.BattleEntities.Count; i++)
+        for (int i = 0; i < this.BattleResolutionStep.BattleEntities.Count; i++)
         {
-            if (this.FilterCriteria.isBattleEntity_compliant(this.BattleResolutionStep._battle.BattleEntities[i]))
+            if (this.FilterCriteria.isBattleEntity_compliant(this.BattleResolutionStep.BattleEntities[i]))
             {
                 set_CurrentlySelectedEntity(i);
                 return;

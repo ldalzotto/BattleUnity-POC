@@ -14,11 +14,11 @@ public class BattleTargetSelectionUI
         return l_ui;
     }
 
-    public void update(BattleTargetSelection p_battleTargetSelection)
+    public void update(BattleEntityTargetSelection p_battleTargetSelection)
     {
         if (p_battleTargetSelection.CurrentlySelectedEntity_HasChanged)
         {
-            if (p_battleTargetSelection.CurrentlySelectedEntity_BattleIndex == BattleTargetSelection.CurrentlySelectedEntity_BattleIndex_None)
+            if (p_battleTargetSelection.CurrentlySelectedEntity_BattleIndex == BattleEntityTargetSelection.CurrentlySelectedEntity_BattleIndex_None)
             {
                 if (this.IsEnabled)
                 {
@@ -34,7 +34,7 @@ public class BattleTargetSelectionUI
                 }
 
                 this.CurrentSelectedBattleEntityComponent = BattleEntityComponent_Container.ComponentsByHandle[
-                        Battle_Singletons._battleResolutionStep._battle.BattleEntities[p_battleTargetSelection.CurrentlySelectedEntity_BattleIndex]
+                        Battle_Singletons._battleResolutionStep.BattleEntities[p_battleTargetSelection.CurrentlySelectedEntity_BattleIndex]
                     ];
                 ;
             }

@@ -10,7 +10,7 @@ public static class SceneGlobalObjects
     public static BattleActionSelectionUI BattleActionSelectionUI;
     public static BattleTargetSelectionUI BattleTargetSelectionUI;
 
-    public static BattleSelectionFlow PlayerTurnInputflow;
+    public static BattlePlayerSelectionFlow PlayerTurnInputflow;
 }
 
 public class GameLoopComponent : MonoBehaviour
@@ -29,7 +29,7 @@ public class GameLoopComponent : MonoBehaviour
         SceneGlobalObjects.MainCanvas = GameObject.FindGameObjectWithTag(Tags.Main_Canvas).GetComponent<Canvas>();
         SceneGlobalObjects.BattleActionSelectionUI = BattleActionSelectionUI.alloc(this.ActionSelectionMenuPrefab, this.CurrentBattleActionSelectionEntityCursorPrefab);
         SceneGlobalObjects.BattleTargetSelectionUI = BattleTargetSelectionUI.alloc(this.BattleTargetSelectionUIGameObjectPrefab);
-        SceneGlobalObjects.PlayerTurnInputflow = BattleSelectionFlow.build();
+        SceneGlobalObjects.PlayerTurnInputflow = BattlePlayerSelectionFlow.build();
 
         Battle_Singletons.Alloc();
         Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation.initialize_attackAnimation;
@@ -44,7 +44,7 @@ public class GameLoopComponent : MonoBehaviour
         }
 
         this.AtbUI = new ATB_UI();
-        this.AtbUI.Initialize(this.ATB_Line_Prefab, Battle_Singletons._battleResolutionStep._battle);
+        this.AtbUI.Initialize(this.ATB_Line_Prefab, Battle_Singletons._battleResolutionStep);
     }
 
     private void Update()
@@ -60,11 +60,12 @@ public class GameLoopComponent : MonoBehaviour
 
         this.AtbUI.Update(l_delta);
 
+        // Handling damage applied events
         if (Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Count > 0)
         {
             for (int i = 0; i < Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Count; i++)
             {
-                BQEOut_Damage_Applied l_event = Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events[i];
+                BQEOut_FinalDamageApplied l_event = Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events[i];
                 BattleEntityComponent l_targetEntity = BattleEntityComponent_Container.ComponentsByHandle[l_event.Target];
 
                 RectTransform l_instanciatedDamageTextObject = GameObject.Instantiate(this.DamageTextPrefab, SceneGlobalObjects.MainCanvas.transform);
@@ -74,7 +75,6 @@ public class GameLoopComponent : MonoBehaviour
 
                 BattleAnimation.onDamageReceived(l_targetEntity);
             }
-            Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Clear();
         }
 
         // On battle entity death
@@ -98,7 +98,7 @@ public class GameLoopComponent : MonoBehaviour
 
                 l_destroyedEntityComponent.Dispose();
             }
-            Battle_Singletons._battleResolutionStep.Out_Death_Events.Clear();
+            // Battle_Singletons._battleResolutionStep.Out_Death_Events.Clear();
         }
 
         BattleEntityComponent_Container.Update(l_delta);

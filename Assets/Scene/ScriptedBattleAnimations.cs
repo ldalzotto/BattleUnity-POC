@@ -78,7 +78,7 @@ public class Anim_BattleAttack_Default
         p_animatedTransform.transform.rotation = Quaternion.LookRotation(this.Movement_ForwardDirection, Vector3.up);
     }
 
-    public static void Update(BQE_Attack_UserDefined p_attackEvent, float delta)
+    public static void Update(BQE_Attack p_attackEvent, float delta)
     {
         Anim_BattleAttack_Default l_battleAttack = (Anim_BattleAttack_Default)p_attackEvent.Context_UserObject;
         switch (l_battleAttack.State)
@@ -96,8 +96,8 @@ public class Anim_BattleAttack_Default
                     {
                         // We terminate the movement
                         l_battleAttack.AnimatedTransform.transform.position = l_battleAttack.TargetPosition_MovingForward;
-                        if (p_attackEvent.DamageSteps == null) { p_attackEvent.DamageSteps = new List<BaseDamageStep>(); }
-                        p_attackEvent.DamageSteps.Add(BaseDamageStep.build(p_attackEvent.Source, p_attackEvent.Target, p_attackEvent.Attack));
+                        if (p_attackEvent.Out_DamageSteps == null) { p_attackEvent.Out_DamageSteps = new List<BaseDamageStep>(); }
+                        p_attackEvent.Out_DamageSteps.Add(BaseDamageStep.build(p_attackEvent.Source, p_attackEvent.Target, p_attackEvent.Attack));
 
                         l_battleAttack.State = Anim_BattleAttack_Default_State.Slashing;
 
@@ -206,15 +206,15 @@ public class Anim_BattleAttack_Distance
         p_animatedTransform.transform.rotation = Quaternion.LookRotation((p_targetTransform.transform.position - p_animatedTransform.transform.position).normalized, Vector3.up);
     }
 
-    public static void Update(BQE_Attack_UserDefined p_attackEvent, float d)
+    public static void Update(BQE_Attack p_attackEvent, float d)
     {
         Anim_BattleAttack_Distance l_battleAttack = (Anim_BattleAttack_Distance)p_attackEvent.Context_UserObject;
         switch (l_battleAttack.State)
         {
             case Anim_BattleAttack_Distance_State.End:
                 {
-                    if (p_attackEvent.DamageSteps == null) { p_attackEvent.DamageSteps = new List<BaseDamageStep>(); }
-                    p_attackEvent.DamageSteps.Add(BaseDamageStep.build(p_attackEvent.Source, p_attackEvent.Target, p_attackEvent.Attack));
+                    if (p_attackEvent.Out_DamageSteps == null) { p_attackEvent.Out_DamageSteps = new List<BaseDamageStep>(); }
+                    p_attackEvent.Out_DamageSteps.Add(BaseDamageStep.build(p_attackEvent.Source, p_attackEvent.Target, p_attackEvent.Attack));
                     l_battleAttack.AnimatedTransform.transform.rotation = l_battleAttack.InitalAnimatedTransform_Rotation;
 
                     p_attackEvent.HasEnded = true;
@@ -252,7 +252,7 @@ public static class BattleAnimation
         {
             case BattleQueueEvent_Type.ATTACK:
                 {
-                    BQE_Attack_UserDefined l_event = (BQE_Attack_UserDefined)p_event.Event;
+                    BQE_Attack l_event = (BQE_Attack)p_event.Event;
                     if (!l_event.Source.IsDead && !l_event.Target.IsDead)
                     {
                         switch (l_event.Attack.AttackType)

@@ -24,7 +24,7 @@ public class BattleActionSelectionUI
         this.isEnabled = true;
     }
 
-    public void update(BattleActionSelection p_battleActionSelection)
+    public void update(BattleEntityPlayerSelection p_battleActionSelection)
     {
         if(p_battleActionSelection.CurrentlySelectedEntity_HasChanged)
         {

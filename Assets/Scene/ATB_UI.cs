@@ -9,7 +9,7 @@ public class ATB_UI
 
     private List<ATB_UIComponent> ATB_Lines;
 
-    public void Initialize(ATB_UIComponent p_atb_line_prefab, Battle p_battle)
+    public void Initialize(ATB_UIComponent p_atb_line_prefab, BattleResolutionStep p_battle)
     {
         this.ATB_Lines = new List<ATB_UIComponent>();
         this.ATB_Bars_Background_GO = GameObject.FindGameObjectWithTag(Tags.ATB_Bars_Background);
