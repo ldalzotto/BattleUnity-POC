@@ -37,6 +37,7 @@ public class BattleEntity
     public BattleEntity_Type Type;
     public BattleEntity_Team Team;
     public float ATB_Speed;
+    // This bool is different from the BattleEntity_Team enum. In the future we may be able to control foes for example.
     public bool IsControlledByPlayer;
     public BattleEntity_BaseStats Stats;
     // public List<AttackLine> AttackSet;

@@ -112,7 +112,7 @@ public struct BattleSelectionFlow
                         {
                             case BattleSelectionFlowState.TARGETTING_ENTITY:
                                 {
-                                    Battle_Singletons._battleTargetSelection.enable();
+                                    Battle_Singletons._battleTargetSelection.enable(BattleTargetSelection_FilterCriteria.build(BattleEntity_Team.FOE));
                                 }
                                 break;
                         }

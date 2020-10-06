@@ -118,6 +118,8 @@ public class BattleTargetSelection
     public bool CurrentlySelectedEntity_HasChanged;
     public int CurrentlySelectedEntity_BattleIndex;
 
+    private BattleTargetSelection_FilterCriteria FilterCriteria;
+
     public static readonly int CurrentlySelectedEntity_BattleIndex_None = -1;
 
     public static BattleTargetSelection alloc(BattleResolutionStep p_battleResolutionStep)
@@ -132,6 +134,12 @@ public class BattleTargetSelection
         this.CurrentlySelectedEntity_HasChanged = false;
         this.isEnabled = true;
         this.select_firstAvailableEntity();
+    }
+
+    public void enable(BattleTargetSelection_FilterCriteria p_filterCriteria)
+    {
+        this.FilterCriteria = p_filterCriteria;
+        this.enable();
     }
 
     public void disable()
@@ -162,7 +170,22 @@ public class BattleTargetSelection
             {
                 l_newIndex = 0;
             }
-            set_CurrentlySelectedEntity(l_newIndex);
+
+            while (l_newIndex != this.CurrentlySelectedEntity_BattleIndex)
+            {
+                if (this.FilterCriteria.isBattleEntity_compliant(this.BattleResolutionStep._battle.BattleEntities[l_newIndex]))
+                {
+                    set_CurrentlySelectedEntity(l_newIndex);
+                    return;
+                }
+
+
+                l_newIndex += 1;
+                if (l_newIndex == this.BattleResolutionStep._battle.BattleEntities.Count)
+                {
+                    l_newIndex = 0;
+                }
+            }
         }
     }
 
@@ -177,20 +200,47 @@ public class BattleTargetSelection
 
     private void select_firstAvailableEntity()
     {
-        if(this.BattleResolutionStep._battle.BattleEntities.Count == 0)
+        for (int i = 0; i < this.BattleResolutionStep._battle.BattleEntities.Count; i++)
         {
-            set_CurrentlySelectedEntity(CurrentlySelectedEntity_BattleIndex_None);
+            if (this.FilterCriteria.isBattleEntity_compliant(this.BattleResolutionStep._battle.BattleEntities[i]))
+            {
+                set_CurrentlySelectedEntity(i);
+                return;
+            }
         }
-        else
-        {
-            set_CurrentlySelectedEntity(0);
-        }
+
+        set_CurrentlySelectedEntity(CurrentlySelectedEntity_BattleIndex_None);
     }
+
 
     private void set_CurrentlySelectedEntity(int l_index)
     {
         if (this.CurrentlySelectedEntity_BattleIndex != l_index)
         { this.CurrentlySelectedEntity_HasChanged = true; }
         this.CurrentlySelectedEntity_BattleIndex = l_index;
+    }
+}
+
+public struct BattleTargetSelection_FilterCriteria
+{
+    public bool TeamFilterEnabled;
+    public BattleEntity_Team Team;
+
+    public static BattleTargetSelection_FilterCriteria build(BattleEntity_Team p_filteredTeam)
+    {
+        return new BattleTargetSelection_FilterCriteria()
+        {
+            TeamFilterEnabled = true,
+            Team = p_filteredTeam
+        };
+    }
+
+    public bool isBattleEntity_compliant(BattleEntity p_battleEntity)
+    {
+        if (this.TeamFilterEnabled && p_battleEntity.Team != this.Team)
+        {
+            return false;
+        }
+        return true;
     }
 }
