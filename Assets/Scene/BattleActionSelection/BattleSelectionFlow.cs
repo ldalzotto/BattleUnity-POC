@@ -47,12 +47,15 @@ public struct BattleSelectionFlow
                     {
                         if (Input.GetKeyDown(KeyCode.Space))
                         {
-                            BattleEntity l_targettedEntity = BattleDecision.Utils.find_battleEntity_ofTeam_random(Battle_Singletons._battleResolutionStep._battle, BattleEntity_Team.FOE);
-                            if (l_targettedEntity != null)
+                            //BattleDecision.Utils.find_battleEntity_ofTeam_random(Battle_Singletons._battleResolutionStep._battle, BattleEntity_Team.FOE);
+
+                            BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined
                             {
-                                BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Attack = AttackDefinition.build(Attack_Type.DEFAULT, 2), Source = Battle_Singletons._battleActionSelection.CurrentlySelectedEntity, Target = l_targettedEntity };
-                                Battle_Singletons._battleActionSelection.pushAction_forCurrentSelectedEntity(l_attackEvent);
-                            }
+                                Attack = AttackDefinition.build(Attack_Type.DEFAULT, 2),
+                                Source = Battle_Singletons._battleActionSelection.CurrentlySelectedEntity,
+                                Target = Battle_Singletons._battleResolutionStep._battle.BattleEntities[Battle_Singletons._battleTargetSelection.CurrentlySelectedEntity_BattleIndex]
+                            };
+                            Battle_Singletons._battleActionSelection.pushAction_forCurrentSelectedEntity(l_attackEvent);
 
                             this.state_switchToActionSelectionMenu();
                         }
