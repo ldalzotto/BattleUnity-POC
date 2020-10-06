@@ -9,6 +9,8 @@ public static class SceneGlobalObjects
     public static AnimationConfiguration AnimationConfiguration;
 
     public static BattleActionSelectionUI BattleActionSelectionUI;
+
+    public static PlayerTurnInputflow PlayerTurnInputflow;
 }
 
 public class GameLoopComponent : MonoBehaviour
@@ -27,6 +29,7 @@ public class GameLoopComponent : MonoBehaviour
         SceneGlobalObjects.MainCanvas = GameObject.FindGameObjectWithTag(Tags.Main_Canvas).GetComponent<Canvas>();
         SceneGlobalObjects.AnimationConfiguration = this.AnimationConfiguration;
         SceneGlobalObjects.BattleActionSelectionUI = BattleActionSelectionUI.alloc(this.ActionSelectionMenuPrefab, this.CurrentBattleActionSelectionEntityCursorPrefab);
+        SceneGlobalObjects.PlayerTurnInputflow = PlayerTurnInputflow.build();
 
         Battle_Singletons.Alloc();
         Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation.initialize_attackAnimation;
@@ -49,43 +52,11 @@ public class GameLoopComponent : MonoBehaviour
         float l_delta = Time.deltaTime;
 
         Battle_Singletons._battleActionSelection.update(l_delta);
+        Battle_Singletons._battleTargetSelection.update(l_delta);
 
-        if (Battle_Singletons._battleActionSelection.CurrentlySelectedEntity != null)
-        {
-            if(!SceneGlobalObjects.BattleActionSelectionUI.isEnabled)
-            {
-                SceneGlobalObjects.BattleActionSelectionUI.enable();
-            }
-
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                BattleEntity l_targettedEntity = BattleDecision.Utils.find_battleEntity_ofTeam_random(Battle_Singletons._battleResolutionStep._battle, BattleEntity_Team.FOE);
-                if (l_targettedEntity != null)
-                {
-                    BQE_Attack_UserDefined l_attackEvent = new BQE_Attack_UserDefined { Attack = AttackDefinition.build(Attack_Type.DEFAULT, 2), Source = Battle_Singletons._battleActionSelection.CurrentlySelectedEntity, Target = l_targettedEntity };
-                    Battle_Singletons._battleActionSelection.pushAction_forCurrentSelectedEntity(l_attackEvent);
-                }
-            }
-            else if(Input.GetKeyDown(KeyCode.LeftControl))
-            {
-                Battle_Singletons._battleActionSelection.switch_selection();
-            }
-
-            SceneGlobalObjects.BattleActionSelectionUI.update(Battle_Singletons._battleActionSelection);
-
-        }
-        else
-        {
-            if (SceneGlobalObjects.BattleActionSelectionUI.isEnabled)
-            {
-                SceneGlobalObjects.BattleActionSelectionUI.disable();
-            }
-        }
-
+        SceneGlobalObjects.PlayerTurnInputflow.update(l_delta);
 
         Battle_Singletons._battleResolutionStep.update(l_delta);
-
-
 
 
         this.AtbUI.Update(l_delta);
@@ -115,8 +86,11 @@ public class GameLoopComponent : MonoBehaviour
                 BattleEntity l_deadEntity = Battle_Singletons._battleResolutionStep.Out_Death_Events[i];
                 BattleEntityComponent l_destroyedEntityComponent = BattleEntityComponent_Container.ComponentsByHandle[l_deadEntity];
 
-                //handling selection UI
+                //handling selection
                 Battle_Singletons._battleActionSelection.on_battleEntityDeath(l_destroyedEntityComponent.BattleEntityHandle);
+
+                //handling target selection
+                Battle_Singletons._battleTargetSelection.on_battleEntityDeath(i);
 
                 l_destroyedEntityComponent.Dispose();
             }

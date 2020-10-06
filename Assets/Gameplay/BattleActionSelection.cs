@@ -11,10 +11,10 @@ public class BattleActionSelection
     public BattleEntity CurrentlySelectedEntity;
     public bool CurrentlySelectedEntity_HasChanged;
 
-    public static BattleActionSelection alloc()
+    public static BattleActionSelection alloc(BattleResolutionStep p_battleResolution)
     {
         BattleActionSelection l_battleActionSelection = new BattleActionSelection();
-        l_battleActionSelection.BattleResolution = Battle_Singletons._battleResolutionStep;
+        l_battleActionSelection.BattleResolution = p_battleResolution;
         l_battleActionSelection.PlayerControlledEntity_WaitingForInput = new List<BattleEntity>();
         l_battleActionSelection.PlayerControlledEntity_ExecutingAction = new List<BattleEntity>();
         return l_battleActionSelection;
@@ -96,7 +96,7 @@ public class BattleActionSelection
 
     public void on_battleEntityDeath(BattleEntity p_deadbattleEntity)
     {
-        if(this.CurrentlySelectedEntity == p_deadbattleEntity)
+        if (this.CurrentlySelectedEntity == p_deadbattleEntity)
         {
             this.PlayerControlledEntity_WaitingForInput.Remove(p_deadbattleEntity);
             this.set_CurrentlySelectedEntity(null);
@@ -108,5 +108,92 @@ public class BattleActionSelection
         if (this.CurrentlySelectedEntity != p_currentlySelectedEntity)
         { this.CurrentlySelectedEntity_HasChanged = true; }
         this.CurrentlySelectedEntity = p_currentlySelectedEntity;
+    }
+}
+
+public class BattleTargetSelection
+{
+    public BattleResolutionStep BattleResolutionStep;
+    private bool isEnabled;
+    private bool CurrentlySelectedEntity_HasChanged;
+    public int CurrentlySelectedEntity_BattleIndex;
+
+    private static readonly int CurrentlySelectedEntity_BattleIndex_None = -1;
+
+    public static BattleTargetSelection alloc(BattleResolutionStep p_battleResolutionStep)
+    {
+        BattleTargetSelection l_targetSelection = new BattleTargetSelection() { BattleResolutionStep = p_battleResolutionStep };
+        l_targetSelection.CurrentlySelectedEntity_BattleIndex = CurrentlySelectedEntity_BattleIndex_None;
+        return l_targetSelection;
+    }
+
+    public void enable()
+    {
+        this.CurrentlySelectedEntity_HasChanged = false;
+        this.isEnabled = true;
+    }
+
+    public void disable()
+    {
+        this.set_CurrentlySelectedEntity(CurrentlySelectedEntity_BattleIndex_None);
+        this.isEnabled = false;
+    }
+
+    public void update(float d)
+    {
+        this.CurrentlySelectedEntity_HasChanged = false;
+        if (this.isEnabled)
+        {
+            if (this.CurrentlySelectedEntity_BattleIndex == CurrentlySelectedEntity_BattleIndex_None)
+            {
+                this.select_firstAvailableEntity();
+            }
+
+        }
+    }
+
+    public void switch_target()
+    {
+        if (this.CurrentlySelectedEntity_BattleIndex != CurrentlySelectedEntity_BattleIndex_None)
+        {
+            int l_newIndex = this.CurrentlySelectedEntity_BattleIndex + 1;
+            if (l_newIndex == this.BattleResolutionStep._battle.BattleEntities.Count)
+            {
+                l_newIndex = 0;
+            }
+            set_CurrentlySelectedEntity(l_newIndex);
+        }
+    }
+
+    public void on_battleEntityDeath(int p_deadbattleEntity_index)
+    {
+        if (this.CurrentlySelectedEntity_BattleIndex == p_deadbattleEntity_index)
+        {
+            this.set_CurrentlySelectedEntity(CurrentlySelectedEntity_BattleIndex_None);
+            this.select_firstAvailableEntity();
+        }
+    }
+
+    private void select_firstAvailableEntity()
+    {
+        if(this.BattleResolutionStep._battle.BattleEntities.Count == 0)
+        {
+            set_CurrentlySelectedEntity(CurrentlySelectedEntity_BattleIndex_None);
+        }
+        else
+        {
+            for (int i = 0; i < this.BattleResolutionStep._battle.BattleEntities.Count; i++)
+            {
+                BattleEntity l_battleEntity = this.BattleResolutionStep._battle.BattleEntities[i];
+                set_CurrentlySelectedEntity(i);
+            }
+        }
+    }
+
+    private void set_CurrentlySelectedEntity(int l_index)
+    {
+        if (this.CurrentlySelectedEntity_BattleIndex != l_index)
+        { this.CurrentlySelectedEntity_HasChanged = true; }
+        this.CurrentlySelectedEntity_BattleIndex = l_index;
     }
 }

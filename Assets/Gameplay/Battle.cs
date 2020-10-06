@@ -10,11 +10,13 @@ public class Battle_Singletons
 {
     public static BattleResolutionStep _battleResolutionStep;
     public static BattleActionSelection _battleActionSelection;
+    public static BattleTargetSelection _battleTargetSelection;
 
     public static void Alloc()
     {
         _battleResolutionStep = BattleResolutionStep.Alloc();
-        _battleActionSelection = BattleActionSelection.alloc();
+        _battleActionSelection = BattleActionSelection.alloc(_battleResolutionStep);
+        _battleTargetSelection = BattleTargetSelection.alloc(_battleResolutionStep);
     }
 }
 
