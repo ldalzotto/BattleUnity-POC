@@ -115,10 +115,10 @@ public class BattleTargetSelection
 {
     public BattleResolutionStep BattleResolutionStep;
     private bool isEnabled;
-    private bool CurrentlySelectedEntity_HasChanged;
+    public bool CurrentlySelectedEntity_HasChanged;
     public int CurrentlySelectedEntity_BattleIndex;
 
-    private static readonly int CurrentlySelectedEntity_BattleIndex_None = -1;
+    public static readonly int CurrentlySelectedEntity_BattleIndex_None = -1;
 
     public static BattleTargetSelection alloc(BattleResolutionStep p_battleResolutionStep)
     {
@@ -131,6 +131,7 @@ public class BattleTargetSelection
     {
         this.CurrentlySelectedEntity_HasChanged = false;
         this.isEnabled = true;
+        this.select_firstAvailableEntity();
     }
 
     public void disable()
@@ -182,11 +183,7 @@ public class BattleTargetSelection
         }
         else
         {
-            for (int i = 0; i < this.BattleResolutionStep._battle.BattleEntities.Count; i++)
-            {
-                BattleEntity l_battleEntity = this.BattleResolutionStep._battle.BattleEntities[i];
-                set_CurrentlySelectedEntity(i);
-            }
+            set_CurrentlySelectedEntity(0);
         }
     }
 

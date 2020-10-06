@@ -1,20 +1,20 @@
 ﻿
 using UnityEngine;
 
-public enum PlayerTurnInputflowState
+public enum BattleSelectionFlowState
 {
     NOTHING = 0,
     IN_ACTIONSELECTION_MENU = 1,
     TARGETTING_ENTITY = 2
 }
 
-public struct PlayerTurnInputflow
+public struct BattleSelectionFlow
 {
-    public PlayerTurnInputflowState State;
+    public BattleSelectionFlowState State;
 
-    public static PlayerTurnInputflow build()
+    public static BattleSelectionFlow build()
     {
-        return new PlayerTurnInputflow() { State = 0 };
+        return new BattleSelectionFlow() { State = 0 };
     }
 
     public void update(float d)
@@ -24,18 +24,18 @@ public struct PlayerTurnInputflow
             if (!SceneGlobalObjects.BattleActionSelectionUI.isEnabled)
             {
                 SceneGlobalObjects.BattleActionSelectionUI.enable();
-                this.set_state(PlayerTurnInputflowState.IN_ACTIONSELECTION_MENU);
+                this.set_state(BattleSelectionFlowState.IN_ACTIONSELECTION_MENU);
             }
 
             switch (this.State)
             {
-                case PlayerTurnInputflowState.NOTHING:
+                case BattleSelectionFlowState.NOTHING:
                     break;
-                case PlayerTurnInputflowState.IN_ACTIONSELECTION_MENU:
+                case BattleSelectionFlowState.IN_ACTIONSELECTION_MENU:
                     {
                         if (Input.GetKeyDown(KeyCode.Space))
                         {
-                            this.set_state(PlayerTurnInputflowState.TARGETTING_ENTITY);
+                            this.set_state(BattleSelectionFlowState.TARGETTING_ENTITY);
                         }
                         else if (Input.GetKeyDown(KeyCode.LeftControl))
                         {
@@ -43,7 +43,7 @@ public struct PlayerTurnInputflow
                         }
                     }
                     break;
-                case PlayerTurnInputflowState.TARGETTING_ENTITY:
+                case BattleSelectionFlowState.TARGETTING_ENTITY:
                     {
                         if (Input.GetKeyDown(KeyCode.Space))
                         {
@@ -56,7 +56,7 @@ public struct PlayerTurnInputflow
 
                             this.state_switchToActionSelectionMenu();
                         }
-                        else if(Input.GetKeyDown(KeyCode.LeftControl))
+                        else if (Input.GetKeyDown(KeyCode.LeftControl))
                         {
                             Battle_Singletons._battleTargetSelection.switch_target();
                         }
@@ -70,13 +70,14 @@ public struct PlayerTurnInputflow
 
 
             SceneGlobalObjects.BattleActionSelectionUI.update(Battle_Singletons._battleActionSelection);
+            SceneGlobalObjects.BattleTargetSelectionUI.update(Battle_Singletons._battleTargetSelection);
 
         }
         else
         {
             if (SceneGlobalObjects.BattleActionSelectionUI.isEnabled)
             {
-                this.set_state(PlayerTurnInputflowState.NOTHING);
+                this.set_state(BattleSelectionFlowState.NOTHING);
                 SceneGlobalObjects.BattleActionSelectionUI.disable();
             }
         }
@@ -87,26 +88,26 @@ public struct PlayerTurnInputflow
     {
         if (SceneGlobalObjects.BattleActionSelectionUI.isEnabled)
         {
-            this.set_state(PlayerTurnInputflowState.IN_ACTIONSELECTION_MENU);
+            this.set_state(BattleSelectionFlowState.IN_ACTIONSELECTION_MENU);
         }
         else
         {
-            this.set_state(PlayerTurnInputflowState.NOTHING);
+            this.set_state(BattleSelectionFlowState.NOTHING);
         }
     }
 
-    private void set_state(PlayerTurnInputflowState p_newState)
+    private void set_state(BattleSelectionFlowState p_newState)
     {
         if (this.State != p_newState)
         {
             switch (this.State)
             {
-                case PlayerTurnInputflowState.NOTHING:
-                case PlayerTurnInputflowState.IN_ACTIONSELECTION_MENU:
+                case BattleSelectionFlowState.NOTHING:
+                case BattleSelectionFlowState.IN_ACTIONSELECTION_MENU:
                     {
                         switch (p_newState)
                         {
-                            case PlayerTurnInputflowState.TARGETTING_ENTITY:
+                            case BattleSelectionFlowState.TARGETTING_ENTITY:
                                 {
                                     Battle_Singletons._battleTargetSelection.enable();
                                 }
@@ -115,7 +116,7 @@ public struct PlayerTurnInputflow
                     }
                     break;
 
-                case PlayerTurnInputflowState.TARGETTING_ENTITY:
+                case BattleSelectionFlowState.TARGETTING_ENTITY:
                     {
                         Battle_Singletons._battleTargetSelection.disable();
                     }
@@ -124,5 +125,17 @@ public struct PlayerTurnInputflow
         }
 
         this.State = p_newState;
+    }
+
+    public void on_battleEntityDeath(BattleEntityComponent p_deadBattleEntityComponent)
+    {
+        if (Battle_Singletons._battleActionSelection.CurrentlySelectedEntity == p_deadBattleEntityComponent.BattleEntityHandle)
+        {
+            if (this.State == BattleSelectionFlowState.TARGETTING_ENTITY)
+            {
+                this.set_state(BattleSelectionFlowState.IN_ACTIONSELECTION_MENU);
+            }
+        }
+
     }
 }

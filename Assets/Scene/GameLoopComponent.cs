@@ -9,8 +9,9 @@ public static class SceneGlobalObjects
     public static AnimationConfiguration AnimationConfiguration;
 
     public static BattleActionSelectionUI BattleActionSelectionUI;
+    public static BattleTargetSelectionUI BattleTargetSelectionUI;
 
-    public static PlayerTurnInputflow PlayerTurnInputflow;
+    public static BattleSelectionFlow PlayerTurnInputflow;
 }
 
 public class GameLoopComponent : MonoBehaviour
@@ -20,6 +21,7 @@ public class GameLoopComponent : MonoBehaviour
     public RectTransform DamageTextPrefab;
     public RectTransform ActionSelectionMenuPrefab;
     public GameObject CurrentBattleActionSelectionEntityCursorPrefab;
+    public GameObject BattleTargetSelectionUIGameObjectPrefab;
 
     ATB_UI AtbUI;
 
@@ -29,7 +31,8 @@ public class GameLoopComponent : MonoBehaviour
         SceneGlobalObjects.MainCanvas = GameObject.FindGameObjectWithTag(Tags.Main_Canvas).GetComponent<Canvas>();
         SceneGlobalObjects.AnimationConfiguration = this.AnimationConfiguration;
         SceneGlobalObjects.BattleActionSelectionUI = BattleActionSelectionUI.alloc(this.ActionSelectionMenuPrefab, this.CurrentBattleActionSelectionEntityCursorPrefab);
-        SceneGlobalObjects.PlayerTurnInputflow = PlayerTurnInputflow.build();
+        SceneGlobalObjects.BattleTargetSelectionUI = BattleTargetSelectionUI.alloc(this.BattleTargetSelectionUIGameObjectPrefab);
+        SceneGlobalObjects.PlayerTurnInputflow = BattleSelectionFlow.build();
 
         Battle_Singletons.Alloc();
         Battle_Singletons._battleResolutionStep.BattleQueueEventInitialize_UserFunction = BattleAnimation.initialize_attackAnimation;
@@ -58,7 +61,6 @@ public class GameLoopComponent : MonoBehaviour
 
         Battle_Singletons._battleResolutionStep.update(l_delta);
 
-
         this.AtbUI.Update(l_delta);
 
         if (Battle_Singletons._battleResolutionStep.Out_DamageApplied_Events.Count > 0)
@@ -86,11 +88,16 @@ public class GameLoopComponent : MonoBehaviour
                 BattleEntity l_deadEntity = Battle_Singletons._battleResolutionStep.Out_Death_Events[i];
                 BattleEntityComponent l_destroyedEntityComponent = BattleEntityComponent_Container.ComponentsByHandle[l_deadEntity];
 
+                SceneGlobalObjects.PlayerTurnInputflow.on_battleEntityDeath(l_destroyedEntityComponent);
+
                 //handling selection
                 Battle_Singletons._battleActionSelection.on_battleEntityDeath(l_destroyedEntityComponent.BattleEntityHandle);
 
                 //handling target selection
                 Battle_Singletons._battleTargetSelection.on_battleEntityDeath(i);
+
+                //We update the BattleTargetSelectionUI is the _battleTargetSelection has changed by taking into account death
+                SceneGlobalObjects.BattleTargetSelectionUI.update(Battle_Singletons._battleTargetSelection);
 
                 l_destroyedEntityComponent.Dispose();
             }
